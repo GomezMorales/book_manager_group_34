@@ -1,3 +1,10 @@
+## [Ejercicio 04]
+- Se implementa un servicio por entidad con CRUD completo, validaciones e id automático.
+- ServicioLibro y ServicioPrecio validan que existan sus entidades relacionadas.
+- ServicioStock agrega ingreso y retiro de unidades sin permitir stock negativo.
+- ServicioCotizacionDolar agrega histórico, última cotización y conversión de USD a pesos.
+- Se impide eliminar entidades que estén en uso por otras.
+
 ## [Ejercicio 03]
 - Se definen las interfaces IRepositorio, IRepositorioStock e IRepositorioCotizacionDolar.
 - Se implementan RepositorioGenero, RepositorioEditorial, RepositorioMoneda y RepositorioTipoCotizacion.

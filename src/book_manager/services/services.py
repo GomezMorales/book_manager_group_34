@@ -28,8 +28,9 @@ from book_manager.repositories.repositories import (
 class ServicioGenero:
     """Lógica de negocio para la gestión de géneros."""
 
-    def __init__(self, repo: RepositorioGenero) -> None:
+    def __init__(self, repo: RepositorioGenero, repo_libro: RepositorioLibro) -> None:
         self._repo = repo
+        self._repo_libro = repo_libro
 
     def _siguiente_id(self) -> int:
         """Devuelve el próximo id disponible (el mayor + 1)."""
@@ -69,16 +70,19 @@ class ServicioGenero:
         return self._repo.actualizar(genero)
 
     def eliminar(self, id: int) -> None:
-        """Elimina un género existente."""
+        """Elimina un género existente, si ningún libro lo usa."""
         self.obtener(id)  # valida que exista
+        if any(l.genero.id == id for l in self._repo_libro.leer_todos()):
+            raise ValueError("No se puede eliminar: hay libros con ese género.")
         self._repo.eliminar(id)
 
 
 class ServicioEditorial:
     """Lógica de negocio para la gestión de editoriales."""
 
-    def __init__(self, repo: RepositorioEditorial) -> None:
+    def __init__(self, repo: RepositorioEditorial, repo_libro: RepositorioLibro) -> None:
         self._repo = repo
+        self._repo_libro = repo_libro
 
     def _siguiente_id(self) -> int:
         """Devuelve el próximo id disponible (el mayor + 1)."""
@@ -118,16 +122,23 @@ class ServicioEditorial:
         return self._repo.actualizar(editorial)
 
     def eliminar(self, id: int) -> None:
-        """Elimina una editorial existente."""
+        """Elimina una editorial existente, si ningún libro la usa."""
         self.obtener(id)  # valida que exista
+        if any(l.editorial.id == id for l in self._repo_libro.leer_todos()):
+            raise ValueError("No se puede eliminar: hay libros de esa editorial.")
         self._repo.eliminar(id)
 
 
 class ServicioTipoCotizacion:
     """Lógica de negocio para la gestión de tipos de cotización."""
 
-    def __init__(self, repo: RepositorioTipoCotizacion) -> None:
+    def __init__(
+        self,
+        repo: RepositorioTipoCotizacion,
+        repo_cotizacion: RepositorioCotizacionDolar,
+    ) -> None:
         self._repo = repo
+        self._repo_cotizacion = repo_cotizacion
 
     def _siguiente_id(self) -> int:
         """Devuelve el próximo id disponible (el mayor + 1)."""
@@ -167,16 +178,19 @@ class ServicioTipoCotizacion:
         return self._repo.actualizar(tipo)
 
     def eliminar(self, id: int) -> None:
-        """Elimina un tipo de cotización existente."""
+        """Elimina un tipo de cotización existente, si no tiene cotizaciones."""
         self.obtener(id)  # valida que exista
+        if self._repo_cotizacion.leer_historico_por_tipo(id):
+            raise ValueError("No se puede eliminar: hay cotizaciones de ese tipo.")
         self._repo.eliminar(id)
 
 
 class ServicioMoneda:
     """Lógica de negocio para la gestión de monedas."""
 
-    def __init__(self, repo: RepositorioMoneda) -> None:
+    def __init__(self, repo: RepositorioMoneda, repo_precio: RepositorioPrecio) -> None:
         self._repo = repo
+        self._repo_precio = repo_precio
 
     def _siguiente_id(self) -> int:
         """Devuelve el próximo id disponible (el mayor + 1)."""
@@ -225,8 +239,10 @@ class ServicioMoneda:
         return self._repo.actualizar(moneda)
 
     def eliminar(self, id: int) -> None:
-        """Elimina una moneda existente."""
+        """Elimina una moneda existente, si ningún precio la usa."""
         self.obtener(id)  # valida que exista
+        if any(p.moneda.id == id for p in self._repo_precio.leer_todos()):
+            raise ValueError("No se puede eliminar: hay precios en esa moneda.")
         self._repo.eliminar(id)
 
       
@@ -238,10 +254,14 @@ class ServicioLibro:
         repo: RepositorioLibro,
         repo_genero: RepositorioGenero,
         repo_editorial: RepositorioEditorial,
+        repo_precio: RepositorioPrecio,
+        repo_stock: RepositorioStock,
     ) -> None:
         self._repo = repo
         self._repo_genero = repo_genero
         self._repo_editorial = repo_editorial
+        self._repo_precio = repo_precio
+        self._repo_stock = repo_stock
 
     def _siguiente_id(self) -> int:
         """Devuelve el próximo id disponible (el mayor + 1)."""
@@ -317,8 +337,12 @@ class ServicioLibro:
         return self._repo.actualizar(libro)
 
     def eliminar(self, id: int) -> None:
-        """Elimina un libro existente."""
+        """Elimina un libro existente, si no tiene precios ni stock."""
         self.obtener(id)  # valida que exista
+        if any(p.libro.id == id for p in self._repo_precio.leer_todos()):
+            raise ValueError("No se puede eliminar: el libro tiene precios cargados.")
+        if self._repo_stock.leer_por_libro(id) is not None:
+            raise ValueError("No se puede eliminar: el libro tiene stock registrado.")
         self._repo.eliminar(id)
 
 

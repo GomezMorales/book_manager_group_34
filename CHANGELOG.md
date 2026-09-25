@@ -1,3 +1,8 @@
+## [Ejercicio 05]
+- Se implementa cargar_datos_iniciales en preload_data.py, que genera los CSV usando los servicios.
+- Se cargan 10 géneros, editoriales, monedas, tipos de cotización, libros y registros de stock.
+- Se cargan 20 precios (ARS y USD) y 12 cotizaciones del dólar.
+
 ## [Ejercicio 04]
 - Se implementa un servicio por entidad con CRUD completo, validaciones e id automático.
 - ServicioLibro y ServicioPrecio validan que existan sus entidades relacionadas.

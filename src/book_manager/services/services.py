@@ -28,7 +28,9 @@ from book_manager.repositories.repositories import (
 class ServicioGenero:
     """Lógica de negocio para la gestión de géneros."""
 
-    def __init__(self, repo: RepositorioGenero, repo_libro: RepositorioLibro) -> None:
+    def __init__(
+        self, repo: RepositorioGenero, repo_libro: RepositorioLibro
+    ) -> None:
         self._repo = repo
         self._repo_libro = repo_libro
 
@@ -37,7 +39,9 @@ class ServicioGenero:
         ids = [g.id for g in self._repo.leer_todos()]
         return max(ids, default=0) + 1
 
-    def _validar_nombre(self, nombre: str, id_excluir: Optional[int] = None) -> str:
+    def _validar_nombre(
+        self, nombre: str, id_excluir: Optional[int] = None
+    ) -> str:
         """Verifica que el nombre no esté vacío ni repetido."""
         nombre = nombre.strip()
         if not nombre:
@@ -72,15 +76,21 @@ class ServicioGenero:
     def eliminar(self, id: int) -> None:
         """Elimina un género existente, si ningún libro lo usa."""
         self.obtener(id)  # valida que exista
-        if any(l.genero.id == id for l in self._repo_libro.leer_todos()):
-            raise ValueError("No se puede eliminar: hay libros con ese género.")
+        if any(
+            libro.genero.id == id for libro in self._repo_libro.leer_todos()
+        ):
+            raise ValueError(
+                "No se puede eliminar: hay libros con ese género."
+            )
         self._repo.eliminar(id)
 
 
 class ServicioEditorial:
     """Lógica de negocio para la gestión de editoriales."""
 
-    def __init__(self, repo: RepositorioEditorial, repo_libro: RepositorioLibro) -> None:
+    def __init__(
+        self, repo: RepositorioEditorial, repo_libro: RepositorioLibro
+    ) -> None:
         self._repo = repo
         self._repo_libro = repo_libro
 
@@ -89,7 +99,9 @@ class ServicioEditorial:
         ids = [e.id for e in self._repo.leer_todos()]
         return max(ids, default=0) + 1
 
-    def _validar_nombre(self, nombre: str, id_excluir: Optional[int] = None) -> str:
+    def _validar_nombre(
+        self, nombre: str, id_excluir: Optional[int] = None
+    ) -> str:
         """Verifica que el nombre no esté vacío ni repetido."""
         nombre = nombre.strip()
         if not nombre:
@@ -124,8 +136,12 @@ class ServicioEditorial:
     def eliminar(self, id: int) -> None:
         """Elimina una editorial existente, si ningún libro la usa."""
         self.obtener(id)  # valida que exista
-        if any(l.editorial.id == id for l in self._repo_libro.leer_todos()):
-            raise ValueError("No se puede eliminar: hay libros de esa editorial.")
+        if any(
+            libro.editorial.id == id for libro in self._repo_libro.leer_todos()
+        ):
+            raise ValueError(
+                "No se puede eliminar: hay libros de esa editorial."
+            )
         self._repo.eliminar(id)
 
 
@@ -145,14 +161,20 @@ class ServicioTipoCotizacion:
         ids = [t.id for t in self._repo.leer_todos()]
         return max(ids, default=0) + 1
 
-    def _validar_nombre(self, nombre: str, id_excluir: Optional[int] = None) -> str:
+    def _validar_nombre(
+        self, nombre: str, id_excluir: Optional[int] = None
+    ) -> str:
         """Verifica que el nombre no esté vacío ni repetido."""
         nombre = nombre.strip()
         if not nombre:
-            raise ValueError("El nombre del tipo de cotización no puede estar vacío.")
+            raise ValueError(
+                "El nombre del tipo de cotización no puede estar vacío."
+            )
         for t in self._repo.leer_todos():
             if t.nombre.lower() == nombre.lower() and t.id != id_excluir:
-                raise ValueError(f"Ya existe el tipo de cotización '{nombre}'.")
+                raise ValueError(
+                    f"Ya existe el tipo de cotización '{nombre}'."
+                )
         return nombre
 
     def crear(self, nombre: str) -> TipoCotizacion:
@@ -178,17 +200,21 @@ class ServicioTipoCotizacion:
         return self._repo.actualizar(tipo)
 
     def eliminar(self, id: int) -> None:
-        """Elimina un tipo de cotización existente, si no tiene cotizaciones."""
+        """Elimina un tipo de cotización si no tiene cotizaciones."""
         self.obtener(id)  # valida que exista
         if self._repo_cotizacion.leer_historico_por_tipo(id):
-            raise ValueError("No se puede eliminar: hay cotizaciones de ese tipo.")
+            raise ValueError(
+                "No se puede eliminar: hay cotizaciones de ese tipo."
+            )
         self._repo.eliminar(id)
 
 
 class ServicioMoneda:
     """Lógica de negocio para la gestión de monedas."""
 
-    def __init__(self, repo: RepositorioMoneda, repo_precio: RepositorioPrecio) -> None:
+    def __init__(
+        self, repo: RepositorioMoneda, repo_precio: RepositorioPrecio
+    ) -> None:
         self._repo = repo
         self._repo_precio = repo_precio
 
@@ -197,11 +223,15 @@ class ServicioMoneda:
         ids = [m.id for m in self._repo.leer_todos()]
         return max(ids, default=0) + 1
 
-    def _validar_codigo(self, codigo: str, id_excluir: Optional[int] = None) -> str:
-        """Verifica que el código tenga 3 letras (ej. ARS, USD) y no esté repetido."""
+    def _validar_codigo(
+        self, codigo: str, id_excluir: Optional[int] = None
+    ) -> str:
+        """Verifica que el código tenga 3 letras y no esté repetido."""
         codigo = codigo.strip().upper()
         if len(codigo) != 3 or not codigo.isalpha():
-            raise ValueError("El código de moneda debe tener 3 letras (ej. ARS, USD).")
+            raise ValueError(
+                "El código de moneda debe tener 3 letras (ej. ARS, USD)."
+            )
         for m in self._repo.leer_todos():
             if m.codigo == codigo and m.id != id_excluir:
                 raise ValueError(f"Ya existe la moneda con código '{codigo}'.")
@@ -211,14 +241,18 @@ class ServicioMoneda:
         """Verifica que la descripción no esté vacía."""
         descripcion = descripcion.strip()
         if not descripcion:
-            raise ValueError("La descripción de la moneda no puede estar vacía.")
+            raise ValueError(
+                "La descripción de la moneda no puede estar vacía."
+            )
         return descripcion
 
     def crear(self, codigo: str, descripcion: str) -> Moneda:
         """Crea una moneda con id automático."""
         codigo = self._validar_codigo(codigo)
         descripcion = self._validar_descripcion(descripcion)
-        return self._repo.crear(Moneda(self._siguiente_id(), codigo, descripcion))
+        return self._repo.crear(
+            Moneda(self._siguiente_id(), codigo, descripcion)
+        )
 
     def listar(self) -> List[Moneda]:
         """Devuelve todas las monedas."""
@@ -242,10 +276,12 @@ class ServicioMoneda:
         """Elimina una moneda existente, si ningún precio la usa."""
         self.obtener(id)  # valida que exista
         if any(p.moneda.id == id for p in self._repo_precio.leer_todos()):
-            raise ValueError("No se puede eliminar: hay precios en esa moneda.")
+            raise ValueError(
+                "No se puede eliminar: hay precios en esa moneda."
+            )
         self._repo.eliminar(id)
 
-      
+
 class ServicioLibro:
     """Lógica de negocio para la gestión de libros."""
 
@@ -265,16 +301,20 @@ class ServicioLibro:
 
     def _siguiente_id(self) -> int:
         """Devuelve el próximo id disponible (el mayor + 1)."""
-        ids = [l.id for l in self._repo.leer_todos()]
+        ids = [libro.id for libro in self._repo.leer_todos()]
         return max(ids, default=0) + 1
 
-    def _validar_isbn(self, isbn: str, id_excluir: Optional[int] = None) -> str:
+    def _validar_isbn(
+        self, isbn: str, id_excluir: Optional[int] = None
+    ) -> str:
         """Verifica que el ISBN tenga 10 o 13 dígitos y no esté repetido."""
-        isbn = isbn.replace("-", "").strip()  # acepta "978-950-..." y lo guarda sin guiones
+        isbn = isbn.replace(
+            "-", ""
+        ).strip()  # acepta "978-950-..." y lo guarda sin guiones
         if not isbn.isdigit() or len(isbn) not in (10, 13):
             raise ValueError("El ISBN debe tener 10 o 13 dígitos.")
-        for l in self._repo.leer_todos():
-            if l.isbn == isbn and l.id != id_excluir:
+        for libro in self._repo.leer_todos():
+            if libro.isbn == isbn and libro.id != id_excluir:
                 raise ValueError(f"Ya existe un libro con ISBN {isbn}.")
         return isbn
 
@@ -300,9 +340,14 @@ class ServicioLibro:
         return editorial
 
     def crear(
-        self, isbn: str, titulo: str, autor: str, genero_id: int, editorial_id: int
+        self,
+        isbn: str,
+        titulo: str,
+        autor: str,
+        genero_id: int,
+        editorial_id: int,
     ) -> Libro:
-        """Crea un libro con id automático, validando sus datos y relaciones."""
+        """Crea un libro con id automático, validando datos y relaciones."""
         libro = Libro(
             self._siguiente_id(),
             self._validar_isbn(isbn),
@@ -325,7 +370,13 @@ class ServicioLibro:
         return libro
 
     def actualizar(
-        self, id: int, isbn: str, titulo: str, autor: str, genero_id: int, editorial_id: int
+        self,
+        id: int,
+        isbn: str,
+        titulo: str,
+        autor: str,
+        genero_id: int,
+        editorial_id: int,
     ) -> Libro:
         """Modifica todos los datos de un libro existente."""
         libro = self.obtener(id)
@@ -340,9 +391,13 @@ class ServicioLibro:
         """Elimina un libro existente, si no tiene precios ni stock."""
         self.obtener(id)  # valida que exista
         if any(p.libro.id == id for p in self._repo_precio.leer_todos()):
-            raise ValueError("No se puede eliminar: el libro tiene precios cargados.")
+            raise ValueError(
+                "No se puede eliminar: el libro tiene precios cargados."
+            )
         if self._repo_stock.leer_por_libro(id) is not None:
-            raise ValueError("No se puede eliminar: el libro tiene stock registrado.")
+            raise ValueError(
+                "No se puede eliminar: el libro tiene stock registrado."
+            )
         self._repo.eliminar(id)
 
 
@@ -384,14 +439,20 @@ class ServicioPrecio:
             raise ValueError(f"No existe la moneda con id {moneda_id}.")
         return moneda
 
-    def _validar_unico(self, libro_id: int, moneda_id: int, id_excluir: Optional[int] = None) -> None:
+    def _validar_unico(
+        self, libro_id: int, moneda_id: int, id_excluir: Optional[int] = None
+    ) -> None:
         """Verifica que el libro no tenga ya un precio en esa moneda."""
         for p in self._repo.leer_todos():
-            if p.libro.id == libro_id and p.moneda.id == moneda_id and p.id != id_excluir:
+            if (
+                p.libro.id == libro_id
+                and p.moneda.id == moneda_id
+                and p.id != id_excluir
+            ):
                 raise ValueError("El libro ya tiene un precio en esa moneda.")
 
     def crear(self, libro_id: int, monto: float, moneda_id: int) -> Precio:
-        """Crea un precio con id automático, validando sus datos y relaciones."""
+        """Crea un precio con id automático, validando datos y relaciones."""
         monto = self._validar_monto(monto)
         libro = self._obtener_libro(libro_id)
         moneda = self._obtener_moneda(moneda_id)
@@ -410,7 +471,9 @@ class ServicioPrecio:
             raise ValueError(f"No existe el precio con id {id}.")
         return precio
 
-    def actualizar(self, id: int, libro_id: int, monto: float, moneda_id: int) -> Precio:
+    def actualizar(
+        self, id: int, libro_id: int, monto: float, moneda_id: int
+    ) -> Precio:
         """Modifica todos los datos de un precio existente."""
         precio = self.obtener(id)
         precio.monto = self._validar_monto(monto)
@@ -428,14 +491,18 @@ class ServicioPrecio:
 class ServicioStock:
     """Lógica de negocio para la gestión del stock de libros."""
 
-    def __init__(self, repo: RepositorioStock, repo_libro: RepositorioLibro) -> None:
+    def __init__(
+        self, repo: RepositorioStock, repo_libro: RepositorioLibro
+    ) -> None:
         self._repo = repo
         self._repo_libro = repo_libro
 
     def _validar_cantidad(self, cantidad: int) -> int:
         """Verifica que la cantidad sea un entero no negativo."""
         if not isinstance(cantidad, int) or cantidad < 0:
-            raise ValueError("La cantidad debe ser un número entero mayor o igual a cero.")
+            raise ValueError(
+                "La cantidad debe ser un número entero mayor o igual a cero."
+            )
         return cantidad
 
     def _obtener_libro(self, libro_id: int) -> Libro:
@@ -450,7 +517,9 @@ class ServicioStock:
         cantidad = self._validar_cantidad(cantidad)
         libro = self._obtener_libro(libro_id)
         if self._repo.leer_por_libro(libro_id) is not None:
-            raise ValueError(f"El libro con id {libro_id} ya tiene stock registrado.")
+            raise ValueError(
+                f"El libro con id {libro_id} ya tiene stock registrado."
+            )
         return self._repo.crear(Stock(libro, cantidad))
 
     def listar(self) -> List[Stock]:
@@ -466,7 +535,9 @@ class ServicioStock:
         """Devuelve el stock de un libro o lanza error si no existe."""
         stock = self._repo.leer_por_libro(libro_id)
         if stock is None:
-            raise ValueError(f"No hay stock registrado para el libro con id {libro_id}.")
+            raise ValueError(
+                f"No hay stock registrado para el libro con id {libro_id}."
+            )
         return stock
 
     def actualizar(self, libro_id: int, cantidad: int) -> Stock:
@@ -484,13 +555,14 @@ class ServicioStock:
         return self._repo.actualizar(stock)
 
     def retirar(self, libro_id: int, cantidad: int) -> Stock:
-        """Resta unidades al stock (por ejemplo, al vender), sin quedar negativo."""
+        """Resta unidades al stock (ej. al vender), sin quedar negativo."""
         if self._validar_cantidad(cantidad) == 0:
             raise ValueError("La cantidad a retirar debe ser mayor a cero.")
         stock = self.obtener(libro_id)
         if cantidad > stock.cantidad:
             raise ValueError(
-                f"Stock insuficiente: hay {stock.cantidad} y se quieren retirar {cantidad}."
+                f"Stock insuficiente: hay {stock.cantidad} y se quieren "
+                f"retirar {cantidad}."
             )
         stock.cantidad -= cantidad
         return self._repo.actualizar(stock)
@@ -515,7 +587,9 @@ class ServicioCotizacionDolar:
     def _validar_valor(self, valor: float) -> float:
         """Verifica que el valor sea mayor a cero."""
         if valor <= 0:
-            raise ValueError("El valor de la cotización debe ser mayor a cero.")
+            raise ValueError(
+                "El valor de la cotización debe ser mayor a cero."
+            )
         return float(valor)
 
     def _validar_fecha(self, fecha: date) -> date:
@@ -528,16 +602,22 @@ class ServicioCotizacionDolar:
         """Devuelve el tipo de cotización o lanza error si no existe."""
         tipo = self._repo_tipo.leer_por_id(tipo_id)
         if tipo is None:
-            raise ValueError(f"No existe el tipo de cotización con id {tipo_id}.")
+            raise ValueError(
+                f"No existe el tipo de cotización con id {tipo_id}."
+            )
         return tipo
 
-    def crear(self, tipo_id: int, fecha: date, valor: float) -> CotizacionDolar:
+    def crear(
+        self, tipo_id: int, fecha: date, valor: float
+    ) -> CotizacionDolar:
         """Registra la cotización de un tipo de dólar en una fecha."""
         valor = self._validar_valor(valor)
         fecha = self._validar_fecha(fecha)
         tipo = self._obtener_tipo(tipo_id)
         if self._repo.leer_por_tipo_y_fecha(tipo_id, fecha) is not None:
-            raise ValueError(f"Ya existe una cotización de {tipo.nombre} para el {fecha}.")
+            raise ValueError(
+                f"Ya existe una cotización de {tipo.nombre} para el {fecha}."
+            )
         return self._repo.crear(CotizacionDolar(tipo, fecha, valor))
 
     def listar(self) -> List[CotizacionDolar]:
@@ -551,22 +631,30 @@ class ServicioCotizacionDolar:
         """Devuelve una cotización o lanza error si no existe."""
         cotizacion = self._repo.leer_por_tipo_y_fecha(tipo_id, fecha)
         if cotizacion is None:
-            raise ValueError(f"No hay cotización del tipo {tipo_id} para el {fecha}.")
+            raise ValueError(
+                f"No hay cotización del tipo {tipo_id} para el {fecha}."
+            )
         return cotizacion
 
     def historico(self, tipo_id: int) -> List[CotizacionDolar]:
         """Devuelve las cotizaciones de un tipo, ordenadas por fecha."""
         self._obtener_tipo(tipo_id)  # valida que el tipo exista
-        return sorted(self._repo.leer_historico_por_tipo(tipo_id), key=lambda c: c.fecha)
+        return sorted(
+            self._repo.leer_historico_por_tipo(tipo_id), key=lambda c: c.fecha
+        )
 
     def ultima(self, tipo_id: int) -> CotizacionDolar:
         """Devuelve la cotización más reciente de un tipo."""
         historico = self.historico(tipo_id)
         if not historico:
-            raise ValueError(f"No hay cotizaciones cargadas para el tipo {tipo_id}.")
+            raise ValueError(
+                f"No hay cotizaciones cargadas para el tipo {tipo_id}."
+            )
         return historico[-1]
 
-    def actualizar(self, tipo_id: int, fecha: date, valor: float) -> CotizacionDolar:
+    def actualizar(
+        self, tipo_id: int, fecha: date, valor: float
+    ) -> CotizacionDolar:
         """Modifica el valor de una cotización existente."""
         cotizacion = self.obtener(tipo_id, fecha)
         cotizacion.valor = self._validar_valor(valor)
@@ -578,5 +666,5 @@ class ServicioCotizacionDolar:
         self._repo.eliminar(tipo_id, fecha)
 
     def convertir_a_pesos(self, monto_usd: float, tipo_id: int) -> float:
-        """Convierte un monto en dólares a pesos con la última cotización del tipo."""
+        """Convierte USD a pesos con la última cotización del tipo."""
         return round(monto_usd * self.ultima(tipo_id).valor, 2)

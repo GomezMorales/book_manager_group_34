@@ -25,8 +25,9 @@ T = TypeVar("T", bound=EntidadBase)
 # Interfaces
 # ---------------------------------------------------------------------------
 
+
 class IRepositorio(abc.ABC, Generic[T]):
-    """Interfaz para repositorios que manejan entidades con operaciones CRUD básicas."""
+    """Interfaz para repositorios con operaciones CRUD básicas."""
 
     @abc.abstractmethod
     def crear(self, entidad: T) -> T:
@@ -118,7 +119,7 @@ class IRepositorioStock(abc.ABC):
             libro_id (int): El ID del libro asociado al stock.
 
         Returns:
-            Optional[Stock]: El objeto Stock si se encuentra, None en caso contrario.
+            Optional[Stock]: El objeto Stock si se encuentra, None si no.
         """
         pass
 
@@ -127,7 +128,8 @@ class IRepositorioStock(abc.ABC):
         """Actualiza un registro de stock existente.
 
         Args:
-            stock (Stock): El objeto Stock a actualizar (debe tener un libro_id existente).
+            stock (Stock): El objeto Stock a actualizar (debe tener un
+                libro_id existente).
 
         Returns:
             Stock: El objeto Stock actualizado.
@@ -169,7 +171,9 @@ class IRepositorioCotizacionDolar(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def leer_por_tipo_y_fecha(self, tipo_id: int, fecha: date) -> Optional[CotizacionDolar]:
+    def leer_por_tipo_y_fecha(
+        self, tipo_id: int, fecha: date
+    ) -> Optional[CotizacionDolar]:
         """Lee una cotización de dólar por tipo y fecha.
 
         Args:
@@ -177,7 +181,8 @@ class IRepositorioCotizacionDolar(abc.ABC):
             fecha (date): La fecha de la cotización.
 
         Returns:
-            Optional[CotizacionDolar]: La cotización si se encuentra, None en caso contrario.
+            Optional[CotizacionDolar]: La cotización si se encuentra, None
+                en caso contrario.
         """
         pass
 
@@ -189,7 +194,7 @@ class IRepositorioCotizacionDolar(abc.ABC):
             tipo_id (int): El ID del tipo de cotización.
 
         Returns:
-            List[CotizacionDolar]: Una lista de cotizaciones históricas para el tipo dado.
+            List[CotizacionDolar]: Cotizaciones históricas del tipo dado.
         """
         pass
 
@@ -198,7 +203,7 @@ class IRepositorioCotizacionDolar(abc.ABC):
         """Actualiza una cotización de dólar existente.
 
         Args:
-            cotizacion (CotizacionDolar): El objeto CotizacionDolar a actualizar.
+            cotizacion (CotizacionDolar): La cotización a actualizar.
 
         Returns:
             CotizacionDolar: El objeto CotizacionDolar actualizado.
@@ -222,6 +227,7 @@ class IRepositorioCotizacionDolar(abc.ABC):
 # ---------------------------------------------------------------------------
 # Implementaciones concretas
 # ---------------------------------------------------------------------------
+
 
 class RepositorioGenero(IRepositorio[Genero]):
     """Repositorio CSV para la entidad Genero."""
@@ -257,7 +263,11 @@ class RepositorioGenero(IRepositorio[Genero]):
         with open(self._ruta, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             for g in todos:
-                writer.writerow([entidad.id, entidad.nombre] if g.id == entidad.id else [g.id, g.nombre])
+                writer.writerow(
+                    [entidad.id, entidad.nombre]
+                    if g.id == entidad.id
+                    else [g.id, g.nombre]
+                )
         return entidad
 
     def eliminar(self, id: int) -> bool:
@@ -306,7 +316,11 @@ class RepositorioEditorial(IRepositorio[Editorial]):
         with open(self._ruta, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             for e in todos:
-                writer.writerow([entidad.id, entidad.nombre] if e.id == entidad.id else [e.id, e.nombre])
+                writer.writerow(
+                    [entidad.id, entidad.nombre]
+                    if e.id == entidad.id
+                    else [e.id, e.nombre]
+                )
         return entidad
 
     def eliminar(self, id: int) -> bool:
@@ -332,7 +346,9 @@ class RepositorioMoneda(IRepositorio[Moneda]):
         if any(m.id == entidad.id for m in todos):
             raise ValueError(f"Ya existe una moneda con id {entidad.id}")
         with open(self._ruta, "a", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow([entidad.id, entidad.codigo, entidad.descripcion])
+            csv.writer(f).writerow(
+                [entidad.id, entidad.codigo, entidad.descripcion]
+            )
         return entidad
 
     def leer_todos(self) -> List[Moneda]:
@@ -355,7 +371,11 @@ class RepositorioMoneda(IRepositorio[Moneda]):
         with open(self._ruta, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             for m in todos:
-                writer.writerow([entidad.id, entidad.codigo, entidad.descripcion] if m.id == entidad.id else [m.id, m.codigo, m.descripcion])
+                writer.writerow(
+                    [entidad.id, entidad.codigo, entidad.descripcion]
+                    if m.id == entidad.id
+                    else [m.id, m.codigo, m.descripcion]
+                )
         return entidad
 
     def eliminar(self, id: int) -> bool:
@@ -379,7 +399,9 @@ class RepositorioTipoCotizacion(IRepositorio[TipoCotizacion]):
     def crear(self, entidad: TipoCotizacion) -> TipoCotizacion:
         todos = self.leer_todos()
         if any(t.id == entidad.id for t in todos):
-            raise ValueError(f"Ya existe un tipo de cotización con id {entidad.id}")
+            raise ValueError(
+                f"Ya existe un tipo de cotización con id {entidad.id}"
+            )
         with open(self._ruta, "a", newline="", encoding="utf-8") as f:
             csv.writer(f).writerow([entidad.id, entidad.nombre])
         return entidad
@@ -400,11 +422,17 @@ class RepositorioTipoCotizacion(IRepositorio[TipoCotizacion]):
     def actualizar(self, entidad: TipoCotizacion) -> TipoCotizacion:
         todos = self.leer_todos()
         if not any(t.id == entidad.id for t in todos):
-            raise ValueError(f"No existe un tipo de cotización con id {entidad.id}")
+            raise ValueError(
+                f"No existe un tipo de cotización con id {entidad.id}"
+            )
         with open(self._ruta, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             for t in todos:
-                writer.writerow([entidad.id, entidad.nombre] if t.id == entidad.id else [t.id, t.nombre])
+                writer.writerow(
+                    [entidad.id, entidad.nombre]
+                    if t.id == entidad.id
+                    else [t.id, t.nombre]
+                )
         return entidad
 
     def eliminar(self, id: int) -> bool:
@@ -434,13 +462,19 @@ class RepositorioLibro(IRepositorio[Libro]):
 
     def crear(self, entidad: Libro) -> Libro:
         todos = self.leer_todos()
-        if any(l.id == entidad.id for l in todos):
+        if any(libro.id == entidad.id for libro in todos):
             raise ValueError(f"Ya existe un libro con id {entidad.id}")
         with open(self._ruta, "a", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow([
-                entidad.id, entidad.isbn, entidad.titulo,
-                entidad.autor, entidad.genero.id, entidad.editorial.id,
-            ])
+            csv.writer(f).writerow(
+                [
+                    entidad.id,
+                    entidad.isbn,
+                    entidad.titulo,
+                    entidad.autor,
+                    entidad.genero.id,
+                    entidad.editorial.id,
+                ]
+            )
         return entidad
 
     def leer_todos(self) -> List[Libro]:
@@ -452,34 +486,72 @@ class RepositorioLibro(IRepositorio[Libro]):
                 if fila:
                     genero = self._repo_genero.leer_por_id(int(fila[4]))
                     editorial = self._repo_editorial.leer_por_id(int(fila[5]))
-                    libros.append(Libro(int(fila[0]), fila[1], fila[2], fila[3], genero, editorial))
+                    libros.append(
+                        Libro(
+                            int(fila[0]),
+                            fila[1],
+                            fila[2],
+                            fila[3],
+                            genero,
+                            editorial,
+                        )
+                    )
         return libros
 
     def leer_por_id(self, id: int) -> Optional[Libro]:
-        return next((l for l in self.leer_todos() if l.id == id), None)
+        return next(
+            (libro for libro in self.leer_todos() if libro.id == id), None
+        )
 
     def actualizar(self, entidad: Libro) -> Libro:
         todos = self.leer_todos()
-        if not any(l.id == entidad.id for l in todos):
+        if not any(libro.id == entidad.id for libro in todos):
             raise ValueError(f"No existe un libro con id {entidad.id}")
         with open(self._ruta, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            for l in todos:
-                if l.id == entidad.id:
-                    writer.writerow([entidad.id, entidad.isbn, entidad.titulo, entidad.autor, entidad.genero.id, entidad.editorial.id])
+            for libro in todos:
+                if libro.id == entidad.id:
+                    writer.writerow(
+                        [
+                            entidad.id,
+                            entidad.isbn,
+                            entidad.titulo,
+                            entidad.autor,
+                            entidad.genero.id,
+                            entidad.editorial.id,
+                        ]
+                    )
                 else:
-                    writer.writerow([l.id, l.isbn, l.titulo, l.autor, l.genero.id, l.editorial.id])
+                    writer.writerow(
+                        [
+                            libro.id,
+                            libro.isbn,
+                            libro.titulo,
+                            libro.autor,
+                            libro.genero.id,
+                            libro.editorial.id,
+                        ]
+                    )
         return entidad
 
     def eliminar(self, id: int) -> bool:
         todos = self.leer_todos()
-        nuevos = [l for l in todos if l.id != id]
+        nuevos = [libro for libro in todos if libro.id != id]
         if len(nuevos) == len(todos):
             return False
         with open(self._ruta, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            for l in nuevos:
-                writer.writerow([l.id, l.isbn, l.titulo, l.autor, l.genero.id, l.editorial.id])
+            for libro in nuevos:
+                writer.writerow(
+                    [
+                        libro.id,
+                        libro.isbn,
+                        libro.titulo,
+                        libro.autor,
+                        libro.genero.id,
+                        libro.editorial.id,
+                    ]
+                )
         return True
 
 
@@ -501,9 +573,14 @@ class RepositorioPrecio(IRepositorio[Precio]):
         if any(p.id == entidad.id for p in todos):
             raise ValueError(f"Ya existe un precio con id {entidad.id}")
         with open(self._ruta, "a", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow([
-                entidad.id, entidad.libro.id, entidad.monto, entidad.moneda.id,
-            ])
+            csv.writer(f).writerow(
+                [
+                    entidad.id,
+                    entidad.libro.id,
+                    entidad.monto,
+                    entidad.moneda.id,
+                ]
+            )
         return entidad
 
     def leer_todos(self) -> List[Precio]:
@@ -515,7 +592,9 @@ class RepositorioPrecio(IRepositorio[Precio]):
                 if fila:
                     libro = self._repo_libro.leer_por_id(int(fila[1]))
                     moneda = self._repo_moneda.leer_por_id(int(fila[3]))
-                    precios.append(Precio(int(fila[0]), libro, float(fila[2]), moneda))
+                    precios.append(
+                        Precio(int(fila[0]), libro, float(fila[2]), moneda)
+                    )
         return precios
 
     def leer_por_id(self, id: int) -> Optional[Precio]:
@@ -529,7 +608,14 @@ class RepositorioPrecio(IRepositorio[Precio]):
             writer = csv.writer(f)
             for p in todos:
                 if p.id == entidad.id:
-                    writer.writerow([entidad.id, entidad.libro.id, entidad.monto, entidad.moneda.id])
+                    writer.writerow(
+                        [
+                            entidad.id,
+                            entidad.libro.id,
+                            entidad.monto,
+                            entidad.moneda.id,
+                        ]
+                    )
                 else:
                     writer.writerow([p.id, p.libro.id, p.monto, p.moneda.id])
         return entidad
@@ -555,7 +641,9 @@ class RepositorioStock(IRepositorioStock):
 
     def crear(self, stock: Stock) -> Stock:
         if self.leer_por_libro(stock.libro.id) is not None:
-            raise ValueError(f"Ya existe stock para el libro con id {stock.libro.id}")
+            raise ValueError(
+                f"Ya existe stock para el libro con id {stock.libro.id}"
+            )
         with open(self._ruta, "a", newline="", encoding="utf-8") as f:
             csv.writer(f).writerow([stock.libro.id, stock.cantidad])
         return stock
@@ -579,11 +667,17 @@ class RepositorioStock(IRepositorioStock):
     def actualizar(self, stock: Stock) -> Stock:
         filas = self._leer_todas_las_filas()
         if not any(int(f[0]) == stock.libro.id for f in filas):
-            raise ValueError(f"No existe stock para el libro con id {stock.libro.id}")
+            raise ValueError(
+                f"No existe stock para el libro con id {stock.libro.id}"
+            )
         with open(self._ruta, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             for fila in filas:
-                writer.writerow([stock.libro.id, stock.cantidad] if int(fila[0]) == stock.libro.id else fila)
+                writer.writerow(
+                    [stock.libro.id, stock.cantidad]
+                    if int(fila[0]) == stock.libro.id
+                    else fila
+                )
         return stock
 
     def eliminar(self, libro_id: int) -> bool:
@@ -601,7 +695,9 @@ class RepositorioStock(IRepositorioStock):
 class RepositorioCotizacionDolar(IRepositorioCotizacionDolar):
     """Repositorio CSV para la entidad CotizacionDolar."""
 
-    def __init__(self, ruta_csv: str, repo_tipo: RepositorioTipoCotizacion) -> None:
+    def __init__(
+        self, ruta_csv: str, repo_tipo: RepositorioTipoCotizacion
+    ) -> None:
         self._ruta = ruta_csv
         self._repo_tipo = repo_tipo
 
@@ -613,20 +709,31 @@ class RepositorioCotizacionDolar(IRepositorioCotizacionDolar):
 
     def _fila_a_cotizacion(self, fila: List[str]) -> CotizacionDolar:
         tipo = self._repo_tipo.leer_por_id(int(fila[0]))
-        return CotizacionDolar(tipo, date.fromisoformat(fila[1]), float(fila[2]))
+        return CotizacionDolar(
+            tipo, date.fromisoformat(fila[1]), float(fila[2])
+        )
 
     def crear(self, cotizacion: CotizacionDolar) -> CotizacionDolar:
-        if self.leer_por_tipo_y_fecha(cotizacion.tipo_cotizacion.id, cotizacion.fecha) is not None:
+        if (
+            self.leer_por_tipo_y_fecha(
+                cotizacion.tipo_cotizacion.id, cotizacion.fecha
+            )
+            is not None
+        ):
             raise ValueError("Ya existe una cotización para ese tipo y fecha.")
         with open(self._ruta, "a", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow([
-                cotizacion.tipo_cotizacion.id,
-                cotizacion.fecha.isoformat(),
-                cotizacion.valor,
-            ])
+            csv.writer(f).writerow(
+                [
+                    cotizacion.tipo_cotizacion.id,
+                    cotizacion.fecha.isoformat(),
+                    cotizacion.valor,
+                ]
+            )
         return cotizacion
 
-    def leer_por_tipo_y_fecha(self, tipo_id: int, fecha: date) -> Optional[CotizacionDolar]:
+    def leer_por_tipo_y_fecha(
+        self, tipo_id: int, fecha: date
+    ) -> Optional[CotizacionDolar]:
         for fila in self._leer_todas_las_filas():
             if int(fila[0]) == tipo_id and fila[1] == fecha.isoformat():
                 return self._fila_a_cotizacion(fila)
@@ -657,7 +764,11 @@ class RepositorioCotizacionDolar(IRepositorioCotizacionDolar):
     def eliminar(self, tipo_id: int, fecha: date) -> bool:
         filas = self._leer_todas_las_filas()
         fecha_iso = fecha.isoformat()
-        nuevas = [f for f in filas if not (int(f[0]) == tipo_id and f[1] == fecha_iso)]
+        nuevas = [
+            f
+            for f in filas
+            if not (int(f[0]) == tipo_id and f[1] == fecha_iso)
+        ]
         if len(nuevas) == len(filas):
             return False
         with open(self._ruta, "w", newline="", encoding="utf-8") as f:

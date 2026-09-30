@@ -1,4 +1,5 @@
 ## [Ejercicio 07]
+- Ajustes de estilo PEP8 en todos los módulos (indentación de 4 espacios, líneas de hasta 79 caracteres, nombres descriptivos) sin cambios funcionales.
 - Se implementa la ejecución del programa en main.py  
 
 ## [Ejercicio 06]

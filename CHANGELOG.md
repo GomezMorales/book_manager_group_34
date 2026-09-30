@@ -1,3 +1,9 @@
+## [Ejercicio 07]
+- Se implementa la ejecución del programa en main.py  
+
+## [Ejercicio 06]
+- Se implementa el menú principal y los submenús de cada item  
+
 ## [Ejercicio 05]
 - Se implementa cargar_datos_iniciales en preload_data.py, que genera los CSV usando los servicios.
 - Se cargan 10 géneros, editoriales, monedas, tipos de cotización, libros y registros de stock.

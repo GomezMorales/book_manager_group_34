@@ -7,3 +7,4 @@ Aplicar los conocimientos adquiridos en programación orientada a objetos y en e
 
 ### Introducción y contexto
 Una librería con venta al público necesita modernizar su sistema de gestión de inventario de libros, gestionando precios en diferentes monedas y siguiendo de cerca la cotización del dólar.
+

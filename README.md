@@ -1,10 +1,13 @@
 # Book Manager
 
-## Sprint 1
+## Sprint 2
 
 ### Objetivo
-Aplicar los conocimientos adquiridos en programación orientada a objetos y en el almacenamiento de datos en archivos para su persistencia.
+Consolidar las bases de manejo de bases de datos, normalización, conexión segura y carga inicial, aplicando programación orientada a objetos.
 
 ### Introducción y contexto
-Una librería con venta al público necesita modernizar su sistema de gestión de inventario de libros, gestionando precios en diferentes monedas y siguiendo de cerca la cotización del dólar.
+En esta segunda entrega ampliamos el alcance haciendo que la aplicación persista en una base de datos relacional, utilizando el ORM SQLAlchemy.
 
+La idea principal es migrar todos los datos cargados en los archivos CSV a tablas relacionales.
+
+Además se realizan consultas a APIs externas.

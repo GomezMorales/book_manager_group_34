@@ -1,3 +1,6 @@
+## [Ejercicio 04]
+- Se definen e implementan las tablas utilizando el ORM de SQLAlchemy para migrar los datos de archivos csv a un modelo de bbdd relacional.
+
 ## [Ejercicio 03]
 - Se implementa la clase Transaccion en database/connection.py como context manager (__enter__ y __exit__).
 - Al salir del bloque with confirma los cambios (commit) o los deshace (rollback) ante un error, y siempre cierra la sesión.

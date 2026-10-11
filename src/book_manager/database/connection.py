@@ -1,8 +1,9 @@
-"""Conexión a la base de datos mediante SQLAlchemy."""
+"""Conexión y transacciones a la base de datos mediante SQLAlchemy."""
 
 import os
 from pathlib import Path
-from typing import Optional
+from types import TracebackType
+from typing import Optional, Type
 from urllib.parse import quote_plus
 
 from dotenv import load_dotenv
@@ -46,8 +47,21 @@ class ConexionDB:
         return self._engine
 
     def obtener_sesion(self) -> Session:
-        """Devuelve una sesión nueva para operar con la base de datos."""
-        return Session(self._engine)
+        """Devuelve una sesión nueva para operar con la base de datos.
+
+        Con expire_on_commit=False los objetos leídos se pueden seguir
+        usando después de confirmar y cerrar la sesión.
+        """
+        return Session(self._engine, expire_on_commit=False)
+
+    def transaccion(self) -> "Transaccion":
+        """Devuelve un context manager para operar dentro de una transacción.
+
+        Ejemplo:
+            with conexion.transaccion() as sesion:
+                sesion.add(objeto)
+        """
+        return Transaccion(self)
 
     def probar_conexion(self) -> bool:
         """Verifica que se pueda conectar a la base de datos.
@@ -93,3 +107,49 @@ class ConexionDB:
                 )
             url = url.replace(MARCADOR_PASSWORD, quote_plus(password))
         return url
+
+
+class Transaccion:
+    """Context manager para manejar las transacciones a la base de datos.
+
+    Al entrar al bloque with abre una sesión. Al salir confirma los cambios
+    (commit) si no hubo errores o los deshace (rollback) si los hubo. En
+    ambos casos cierra la sesión.
+    """
+
+    def __init__(self, conexion: ConexionDB) -> None:
+        """Guarda la conexión con la que se abrirá la sesión.
+
+        Raises:
+            TypeError: Si no se recibe una instancia de ConexionDB.
+        """
+        if not isinstance(conexion, ConexionDB):
+            raise TypeError("Se esperaba una instancia de ConexionDB.")
+        self._conexion: ConexionDB = conexion
+        self._sesion: Optional[Session] = None
+
+    def __enter__(self) -> Session:
+        """Abre la sesión y la entrega al bloque with."""
+        self._sesion = self._conexion.obtener_sesion()
+        return self._sesion
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> bool:
+        """Confirma o deshace los cambios y cierra la sesión.
+
+        Returns:
+            False, para que si hubo una excepción se siga propagando.
+        """
+        try:
+            if exc_type is None:
+                self._sesion.commit()
+            else:
+                self._sesion.rollback()
+        finally:
+            self._sesion.close()
+            self._sesion = None
+        return False

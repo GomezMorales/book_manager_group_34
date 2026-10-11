@@ -1,3 +1,8 @@
+## [Ejercicio 02]
+- Se implementa la clase ConexionDB en database/connection.py usando SQLAlchemy.
+- La URL de conexión se lee del archivo .env y la contraseña de la variable de entorno DATABASE_PASSWORD.
+- Se agregan SQLAlchemy, python-dotenv y psycopg2-binary a requirements.txt.
+
 ## [Ejercicio 01]
 - Se crea la rama Sprint_2 a partir de Sprint_1.
 - Se agregan database/connection.py, models/models.py, migrations/sql y .env.

@@ -1,3 +1,8 @@
+## [Ejercicio 03]
+- Se implementa la clase Transaccion en database/connection.py como context manager (__enter__ y __exit__).
+- Al salir del bloque with confirma los cambios (commit) o los deshace (rollback) ante un error, y siempre cierra la sesión.
+- Se agrega el método transaccion() a ConexionDB para usarlo con with.
+
 ## [Ejercicio 02]
 - Se implementa la clase ConexionDB en database/connection.py usando SQLAlchemy.
 - La URL de conexión se lee del archivo .env y la contraseña de la variable de entorno DATABASE_PASSWORD.

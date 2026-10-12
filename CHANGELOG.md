@@ -1,3 +1,8 @@
+## [Ejercicio 01]
+- Se crea la rama Sprint_2 a partir de Sprint_1.
+- Se agregan database/connection.py, models/models.py, migrations/sql y .env.
+- Se actualiza el README al Sprint 2.
+
 ## [Ejercicio 04]
 - Se definen e implementan las tablas utilizando el ORM de SQLAlchemy para migrar los datos de archivos csv a un modelo de bbdd relacional.
 

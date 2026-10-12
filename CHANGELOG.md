@@ -1,3 +1,8 @@
+## [Ejercicio 05]
+- Se implementa migrar_datos en migrations/migrations.py: lee los CSV del Sprint 1 y genera un archivo .sql por tabla en migrations/sql.
+- Los .sql se ejecutan en una única transacción y en orden de dependencias (claves foráneas); la migración se puede repetir sin duplicar datos (ON CONFLICT DO NOTHING).
+- Se crean las tablas si no existen y se reinician las secuencias de PostgreSQL para que los próximos altas no choquen con los ids migrados.
+
 ## [Ejercicio 04]
 - Se definen e implementan las tablas utilizando el ORM de SQLAlchemy para migrar los datos de archivos csv a un modelo de bbdd relacional.
 

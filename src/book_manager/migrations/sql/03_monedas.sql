@@ -1,0 +1,10 @@
+INSERT INTO monedas (id_moneda, codigo, descripcion) VALUES (1, 'ARS', 'Peso argentino') ON CONFLICT DO NOTHING;
+INSERT INTO monedas (id_moneda, codigo, descripcion) VALUES (2, 'USD', 'Dólar estadounidense') ON CONFLICT DO NOTHING;
+INSERT INTO monedas (id_moneda, codigo, descripcion) VALUES (3, 'EUR', 'Euro') ON CONFLICT DO NOTHING;
+INSERT INTO monedas (id_moneda, codigo, descripcion) VALUES (4, 'BRL', 'Real brasileño') ON CONFLICT DO NOTHING;
+INSERT INTO monedas (id_moneda, codigo, descripcion) VALUES (5, 'CLP', 'Peso chileno') ON CONFLICT DO NOTHING;
+INSERT INTO monedas (id_moneda, codigo, descripcion) VALUES (6, 'UYU', 'Peso uruguayo') ON CONFLICT DO NOTHING;
+INSERT INTO monedas (id_moneda, codigo, descripcion) VALUES (7, 'GBP', 'Libra esterlina') ON CONFLICT DO NOTHING;
+INSERT INTO monedas (id_moneda, codigo, descripcion) VALUES (8, 'JPY', 'Yen japonés') ON CONFLICT DO NOTHING;
+INSERT INTO monedas (id_moneda, codigo, descripcion) VALUES (9, 'MXN', 'Peso mexicano') ON CONFLICT DO NOTHING;
+INSERT INTO monedas (id_moneda, codigo, descripcion) VALUES (10, 'CAD', 'Dólar canadiense') ON CONFLICT DO NOTHING;

@@ -1,0 +1,10 @@
+INSERT INTO tipos_cotizacion (id_tipo_cotizacion, nombre) VALUES (1, 'Oficial') ON CONFLICT DO NOTHING;
+INSERT INTO tipos_cotizacion (id_tipo_cotizacion, nombre) VALUES (2, 'Blue') ON CONFLICT DO NOTHING;
+INSERT INTO tipos_cotizacion (id_tipo_cotizacion, nombre) VALUES (3, 'MEP') ON CONFLICT DO NOTHING;
+INSERT INTO tipos_cotizacion (id_tipo_cotizacion, nombre) VALUES (4, 'CCL') ON CONFLICT DO NOTHING;
+INSERT INTO tipos_cotizacion (id_tipo_cotizacion, nombre) VALUES (5, 'Tarjeta') ON CONFLICT DO NOTHING;
+INSERT INTO tipos_cotizacion (id_tipo_cotizacion, nombre) VALUES (6, 'Mayorista') ON CONFLICT DO NOTHING;
+INSERT INTO tipos_cotizacion (id_tipo_cotizacion, nombre) VALUES (7, 'Cripto') ON CONFLICT DO NOTHING;
+INSERT INTO tipos_cotizacion (id_tipo_cotizacion, nombre) VALUES (8, 'Ahorro') ON CONFLICT DO NOTHING;
+INSERT INTO tipos_cotizacion (id_tipo_cotizacion, nombre) VALUES (9, 'Turista') ON CONFLICT DO NOTHING;
+INSERT INTO tipos_cotizacion (id_tipo_cotizacion, nombre) VALUES (10, 'Exportación') ON CONFLICT DO NOTHING;

@@ -1,0 +1,12 @@
+INSERT INTO cotizaciones_dolar (id_tipo_cotizacion, fecha, valor) VALUES (1, '2026-09-14', 1350.0) ON CONFLICT DO NOTHING;
+INSERT INTO cotizaciones_dolar (id_tipo_cotizacion, fecha, valor) VALUES (1, '2026-09-15', 1355.0) ON CONFLICT DO NOTHING;
+INSERT INTO cotizaciones_dolar (id_tipo_cotizacion, fecha, valor) VALUES (1, '2026-09-16', 1360.0) ON CONFLICT DO NOTHING;
+INSERT INTO cotizaciones_dolar (id_tipo_cotizacion, fecha, valor) VALUES (1, '2026-09-17', 1358.0) ON CONFLICT DO NOTHING;
+INSERT INTO cotizaciones_dolar (id_tipo_cotizacion, fecha, valor) VALUES (1, '2026-09-18', 1365.0) ON CONFLICT DO NOTHING;
+INSERT INTO cotizaciones_dolar (id_tipo_cotizacion, fecha, valor) VALUES (2, '2026-09-14', 1400.0) ON CONFLICT DO NOTHING;
+INSERT INTO cotizaciones_dolar (id_tipo_cotizacion, fecha, valor) VALUES (2, '2026-09-15', 1410.0) ON CONFLICT DO NOTHING;
+INSERT INTO cotizaciones_dolar (id_tipo_cotizacion, fecha, valor) VALUES (2, '2026-09-16', 1405.0) ON CONFLICT DO NOTHING;
+INSERT INTO cotizaciones_dolar (id_tipo_cotizacion, fecha, valor) VALUES (2, '2026-09-17', 1415.0) ON CONFLICT DO NOTHING;
+INSERT INTO cotizaciones_dolar (id_tipo_cotizacion, fecha, valor) VALUES (2, '2026-09-18', 1420.0) ON CONFLICT DO NOTHING;
+INSERT INTO cotizaciones_dolar (id_tipo_cotizacion, fecha, valor) VALUES (3, '2026-09-18', 1390.0) ON CONFLICT DO NOTHING;
+INSERT INTO cotizaciones_dolar (id_tipo_cotizacion, fecha, valor) VALUES (4, '2026-09-18', 1395.0) ON CONFLICT DO NOTHING;

@@ -1,0 +1,10 @@
+INSERT INTO libros (id_libro, isbn, titulo, autor, id_genero, id_editorial) VALUES (1, '9789500000001', 'Metro 2033', 'Dmitry Glukhovsky', 5, 1) ON CONFLICT DO NOTHING;
+INSERT INTO libros (id_libro, isbn, titulo, autor, id_genero, id_editorial) VALUES (2, '9789500000002', 'Ficciones', 'Jorge Luis Borges', 2, 4) ON CONFLICT DO NOTHING;
+INSERT INTO libros (id_libro, isbn, titulo, autor, id_genero, id_editorial) VALUES (3, '9789500000003', 'Cien años de soledad', 'Gabriel García Márquez', 1, 3) ON CONFLICT DO NOTHING;
+INSERT INTO libros (id_libro, isbn, titulo, autor, id_genero, id_editorial) VALUES (4, '9789500000004', 'Harry Potter y la piedra filosofal', 'J. K. Rowling', 6, 10) ON CONFLICT DO NOTHING;
+INSERT INTO libros (id_libro, isbn, titulo, autor, id_genero, id_editorial) VALUES (5, '9789500000005', 'El laberinto de la soledad', 'Octavio Paz', 4, 1) ON CONFLICT DO NOTHING;
+INSERT INTO libros (id_libro, isbn, titulo, autor, id_genero, id_editorial) VALUES (6, '9789500000006', 'Fahrenheit 451', 'Ray Bradbury', 5, 9) ON CONFLICT DO NOTHING;
+INSERT INTO libros (id_libro, isbn, titulo, autor, id_genero, id_editorial) VALUES (7, '9789500000007', 'El señor de los anillos', 'J. R. R. Tolkien', 6, 9) ON CONFLICT DO NOTHING;
+INSERT INTO libros (id_libro, isbn, titulo, autor, id_genero, id_editorial) VALUES (8, '9789500000008', 'Asesinato en el Orient Express', 'Agatha Christie', 7, 1) ON CONFLICT DO NOTHING;
+INSERT INTO libros (id_libro, isbn, titulo, autor, id_genero, id_editorial) VALUES (9, '9789500000009', 'Las venas abiertas de América Latina', 'Eduardo Galeano', 8, 7) ON CONFLICT DO NOTHING;
+INSERT INTO libros (id_libro, isbn, titulo, autor, id_genero, id_editorial) VALUES (10, '9789500000010', 'El principito', 'Antoine de Saint-Exupéry', 10, 10) ON CONFLICT DO NOTHING;

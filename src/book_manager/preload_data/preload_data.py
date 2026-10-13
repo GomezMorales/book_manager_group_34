@@ -1,40 +1,20 @@
-import os
 from datetime import date
-from pathlib import Path
 
-from book_manager.repositories.repositories import (
-    RepositorioCotizacionDolar,
-    RepositorioEditorial,
-    RepositorioGenero,
-    RepositorioLibro,
-    RepositorioMoneda,
-    RepositorioPrecio,
-    RepositorioStock,
-    RepositorioTipoCotizacion,
+from sqlalchemy import delete
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from book_manager.database.connection import ConexionDB
+from book_manager.models.models import (
+    CotizacionDolar as ModeloCotizacionDolar,
+    Editorial as ModeloEditorial,
+    Genero as ModeloGenero,
+    Libro as ModeloLibro,
+    Moneda as ModeloMoneda,
+    Precio as ModeloPrecio,
+    Stock as ModeloStock,
+    TipoCotizacion as ModeloTipoCotizacion,
 )
-from book_manager.services.services import (
-    ServicioCotizacionDolar,
-    ServicioEditorial,
-    ServicioGenero,
-    ServicioLibro,
-    ServicioMoneda,
-    ServicioPrecio,
-    ServicioStock,
-    ServicioTipoCotizacion,
-)
-
-RUTA_CSV = Path(__file__).resolve().parent.parent / "migrations" / "csv"
-
-ARCHIVOS = {
-    "genero": "generos.csv",
-    "editorial": "editoriales.csv",
-    "moneda": "monedas.csv",
-    "tipo_cotizacion": "tipos_cotizacion.csv",
-    "libro": "libros.csv",
-    "precio": "precios.csv",
-    "stock": "stock.csv",
-    "cotizacion": "cotizaciones_dolar.csv",
-}
 
 GENEROS = [
     "Novela",
@@ -166,75 +146,98 @@ COTIZACIONES = [
 ]
 
 
-def cargar_datos_iniciales(ruta: Path = RUTA_CSV) -> None:
-    """Genera los CSV de migrations/csv a partir de los datos iniciales.
+def cargar_datos_iniciales(conexion: ConexionDB) -> None:
+    """Reemplaza los datos de la base por el conjunto de ejemplo."""
+    try:
+        with conexion.transaccion() as sesion:
+            _vaciar_tablas(sesion)
+            sesion.add_all(
+                ModeloGenero(id_genero=id, nombre=nombre)
+                for id, nombre in enumerate(GENEROS, start=1)
+            )
+            sesion.add_all(
+                ModeloEditorial(id_editorial=id, nombre=nombre)
+                for id, nombre in enumerate(EDITORIALES, start=1)
+            )
+            sesion.add_all(
+                ModeloMoneda(
+                    id_moneda=id, codigo=codigo, descripcion=descripcion
+                )
+                for id, (codigo, descripcion) in enumerate(MONEDAS, start=1)
+            )
+            sesion.add_all(
+                ModeloTipoCotizacion(
+                    id_tipo_cotizacion=id, nombre=nombre
+                )
+                for id, nombre in enumerate(TIPOS_COTIZACION, start=1)
+            )
+            sesion.add_all(
+                ModeloLibro(
+                    id_libro=id,
+                    isbn=isbn,
+                    titulo=titulo,
+                    autor=autor,
+                    id_genero=genero_id,
+                    id_editorial=editorial_id,
+                )
+                for id, (isbn, titulo, autor, genero_id, editorial_id) in
+                enumerate(LIBROS, start=1)
+            )
+            sesion.add_all(
+                ModeloPrecio(
+                    id_precio=precio_id,
+                    id_libro=libro_id,
+                    monto=monto,
+                    id_moneda=id_moneda,
+                )
+                for precio_id, (libro_id, monto, id_moneda) in
+                _precios_iniciales()
+            )
+            sesion.add_all(
+                ModeloStock(id_libro=libro_id, cantidad=cantidad)
+                for libro_id, cantidad in STOCK
+            )
+            sesion.add_all(
+                ModeloCotizacionDolar(
+                    id_tipo_cotizacion=tipo_id, fecha=fecha, valor=valor
+                )
+                for tipo_id, fecha, valor in COTIZACIONES
+            )
+    except IntegrityError as error:
+        raise ValueError(
+            "No se pudieron cargar los datos iniciales por una "
+            "restricción de integridad de la base de datos."
+        ) from error
 
-    Borra los archivos existentes y vuelve a cargar todo usando los servicios,
-    para que los datos pasen por las mismas validaciones que el sistema.
-    """
-    ruta = Path(ruta)
-    os.makedirs(ruta, exist_ok=True)
 
-    # Arranca de cero para no duplicar datos si se ejecuta más de una vez
-    for nombre in ARCHIVOS.values():
-        archivo = ruta / nombre
-        if archivo.exists():
-            archivo.unlink()
+def _vaciar_tablas(sesion: Session) -> None:
+    """Elimina datos en orden inverso a las dependencias foráneas."""
+    for modelo in (
+        ModeloCotizacionDolar,
+        ModeloStock,
+        ModeloPrecio,
+        ModeloLibro,
+        ModeloTipoCotizacion,
+        ModeloMoneda,
+        ModeloEditorial,
+        ModeloGenero,
+    ):
+        sesion.execute(delete(modelo))
 
-    # Repositorios apuntando a la carpeta de migraciones
-    repo_genero = RepositorioGenero(str(ruta / ARCHIVOS["genero"]))
-    repo_editorial = RepositorioEditorial(str(ruta / ARCHIVOS["editorial"]))
-    repo_moneda = RepositorioMoneda(str(ruta / ARCHIVOS["moneda"]))
-    repo_tipo = RepositorioTipoCotizacion(
-        str(ruta / ARCHIVOS["tipo_cotizacion"])
-    )
-    repo_libro = RepositorioLibro(
-        str(ruta / ARCHIVOS["libro"]), repo_genero, repo_editorial
-    )
-    repo_precio = RepositorioPrecio(
-        str(ruta / ARCHIVOS["precio"]), repo_libro, repo_moneda
-    )
-    repo_stock = RepositorioStock(str(ruta / ARCHIVOS["stock"]), repo_libro)
-    repo_cotizacion = RepositorioCotizacionDolar(
-        str(ruta / ARCHIVOS["cotizacion"]), repo_tipo
-    )
 
-    # Catálogos simples (no dependen de otras entidades)
-    servicio_genero = ServicioGenero(repo_genero, repo_libro)
-    for nombre in GENEROS:
-        servicio_genero.crear(nombre)
-
-    servicio_editorial = ServicioEditorial(repo_editorial, repo_libro)
-    for nombre in EDITORIALES:
-        servicio_editorial.crear(nombre)
-
-    servicio_moneda = ServicioMoneda(repo_moneda, repo_precio)
-    for codigo, descripcion in MONEDAS:
-        servicio_moneda.crear(codigo, descripcion)
-
-    servicio_tipo = ServicioTipoCotizacion(repo_tipo, repo_cotizacion)
-    for nombre in TIPOS_COTIZACION:
-        servicio_tipo.crear(nombre)
-
-    # Libros (necesitan géneros y editoriales)
-    servicio_libro = ServicioLibro(
-        repo_libro, repo_genero, repo_editorial, repo_precio, repo_stock
-    )
-    for isbn, titulo, autor, genero_id, editorial_id in LIBROS:
-        servicio_libro.crear(isbn, titulo, autor, genero_id, editorial_id)
-
-    # Precios en pesos (moneda 1) y en dólares (moneda 2)
-    servicio_precio = ServicioPrecio(repo_precio, repo_libro, repo_moneda)
-    for libro_id, monto_ars, monto_usd in PRECIOS:
-        servicio_precio.crear(libro_id, monto_ars, 1)
-        servicio_precio.crear(libro_id, monto_usd, 2)
-
-    # Stock inicial de cada libro
-    servicio_stock = ServicioStock(repo_stock, repo_libro)
-    for libro_id, cantidad in STOCK:
-        servicio_stock.crear(libro_id, cantidad)
-
-    # Cotizaciones del dólar (necesitan tipos de cotización)
-    servicio_cotizacion = ServicioCotizacionDolar(repo_cotizacion, repo_tipo)
-    for tipo_id, fecha, valor in COTIZACIONES:
-        servicio_cotizacion.crear(tipo_id, fecha, valor)
+def _precios_iniciales() -> list[tuple[int, tuple[int, float, int]]]:
+    """Asigna IDs estables a los dos precios iniciales de cada libro."""
+    return [
+        (precio_id, (libro_id, monto, id_moneda))
+        for precio_id, (libro_id, monto, id_moneda) in enumerate(
+            (
+                (libro_id, monto, id_moneda)
+                for libro_id, monto_ars, monto_usd in PRECIOS
+                for monto, id_moneda in (
+                    (monto_ars, 1),
+                    (monto_usd, 2),
+                )
+            ),
+            start=1,
+        )
+    ]

@@ -1,3 +1,6 @@
+## [Ejercicio 06]
+- Se migra la persistencia con la que trabaja el sistema, pasando de operar con los CSV a operar con la BBDD definida en los ejercicios previos.
+
 ## [Ejercicio 05]
 - Se implementa migrar_datos en migrations/migrations.py: lee los CSV del Sprint 1 y genera un archivo .sql por tabla en migrations/sql.
 - Los .sql se ejecutan en una única transacción y en orden de dependencias (claves foráneas); la migración se puede repetir sin duplicar datos (ON CONFLICT DO NOTHING).

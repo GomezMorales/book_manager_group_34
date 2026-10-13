@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Callable, List, Sequence
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from book_manager.entities.entities import (
     CotizacionDolar,
     Editorial,
@@ -160,7 +162,7 @@ class ConsolaBookManager:
             except (KeyboardInterrupt, EOFError):
                 print("\nOperación cancelada. Hasta luego.")
                 return
-            except (ValueError, OSError) as error:
+            except (ValueError, OSError, SQLAlchemyError) as error:
                 print(f"Error: {error}")
 
     @staticmethod
@@ -202,7 +204,7 @@ class ConsolaBookManager:
                         print("Registro eliminado correctamente.")
                 else:
                     print("Opción no válida.")
-            except (ValueError, OSError) as error:
+            except (ValueError, OSError, SQLAlchemyError) as error:
                 print(f"Error: {error}")
 
     @staticmethod

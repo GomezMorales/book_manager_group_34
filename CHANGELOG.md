@@ -1,3 +1,6 @@
+## [Ejercicio 08]
+- Se modifica book_manager/ui/console.py para extender el menú principal y sus opciones.
+
 ## [Ejercicio 07]
 - Se modifica el .env para poder obtener la URL de la API y se crean las funciones para descargar, buscar y registrar las cotizaciones en la base de datos.
 

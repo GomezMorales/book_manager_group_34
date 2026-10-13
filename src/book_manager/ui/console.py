@@ -1,7 +1,9 @@
 """Interfaz de consola para la gestión de la librería."""
 
+import csv
 from dataclasses import dataclass
 from datetime import date
+from pathlib import Path
 from typing import Callable, List, Sequence
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -157,6 +159,8 @@ class ConsolaBookManager:
                     self._menu_stock()
                 elif opcion == "10":
                     self._menu_reportes()
+                elif opcion == "11":
+                    self._obtener_cotizaciones_api()
                 else:
                     print("Opción no válida.")
             except (KeyboardInterrupt, EOFError):
@@ -171,7 +175,7 @@ class ConsolaBookManager:
             "\n1. Libros       2. Géneros       3. Editoriales\n"
             "4. Monedas      5. Tipos dólar   6. Precios\n"
             "7. Stock        8. Cotizaciones  9. Movimientos de stock\n"
-            "10. Reportes    0. Salir"
+            "10. Reportes    11. Obtener cotizaciones por API    0. Salir"
         )
 
     def _menu_crud(self, gestor: GestorCRUD) -> None:
@@ -392,6 +396,11 @@ class ConsolaBookManager:
         fecha = self._leer_fecha("Fecha de la cotización a eliminar")
         self._cotizaciones.eliminar(tipo_id, fecha)
 
+    def _obtener_cotizaciones_api(self) -> None:
+        """Descarga y registra las cotizaciones mediante el servicio."""
+        self._cotizaciones.obtener_cotizaciones()
+        print("Cotizaciones obtenidas y registradas correctamente.")
+
     def _menu_stock(self) -> None:
         while True:
             print("\n--- Movimientos de stock ---")
@@ -421,6 +430,8 @@ class ConsolaBookManager:
             print("2. Libros con stock bajo")
             print("3. Histórico de cotización")
             print("4. Convertir USD a ARS")
+            print("5. Lista de precios bimonetaria")
+            print("6. Exportar precios a CSV")
             print("0. Volver")
             opcion = input("Opción: ").strip()
             try:
@@ -434,6 +445,10 @@ class ConsolaBookManager:
                     self._reporte_cotizaciones()
                 elif opcion == "4":
                     self._reporte_conversion()
+                elif opcion == "5":
+                    self._reporte_precios_bimonetarios()
+                elif opcion == "6":
+                    self._exportar_precios_csv()
                 else:
                     print("Opción no válida.")
             except (ValueError, OSError) as error:
@@ -487,3 +502,59 @@ class ConsolaBookManager:
             f"{ultima.tipo_cotizacion.nombre} "
             f"del {ultima.fecha.isoformat()} (${ultima.valor:.2f}/USD)."
         )
+
+    def _reporte_precios_bimonetarios(self) -> None:
+        """Muestra cada libro con precio ARS y precio en otra moneda."""
+        monedas = self._monedas.listar()
+        moneda_id = self._elegir_id("moneda distinta de ARS", monedas)
+        moneda = self._monedas.obtener(moneda_id)
+
+        if moneda.codigo == "ARS":
+            raise ValueError("Seleccione una moneda distinta de ARS.")
+
+        precios_por_libro = {
+            (precio.libro.id, precio.moneda.codigo): precio.monto
+            for precio in self._precios.listar()
+        }
+        libros = self._libros.listar()
+        if not libros:
+            print("No hay libros cargados.")
+            return
+
+        print(f"\n--- Precios en ARS y {moneda.codigo} ---")
+        for libro in libros:
+            ars = precios_por_libro.get((libro.id, "ARS"))
+            otra_moneda = precios_por_libro.get((libro.id, moneda.codigo))
+            texto_ars = f"ARS {ars:.2f}" if ars is not None else "sin precio ARS"
+            texto_otra = (
+                f"{moneda.codigo} {otra_moneda:.2f}"
+                if otra_moneda is not None
+                else f"sin precio {moneda.codigo}"
+            )
+            print(f"[{libro.id}] {libro.titulo} | {texto_ars} | {texto_otra}")
+
+    def _exportar_precios_csv(self) -> None:
+        """Exporta todos los precios registrados, sin filtrar por moneda."""
+        ruta_salida = (
+            Path(__file__).resolve().parents[3]
+            / "precios_todas_las_monedas.csv"
+        )
+        precios = self._precios.listar()
+
+        with ruta_salida.open("w", newline="", encoding="utf-8") as archivo:
+            escritor = csv.writer(archivo)
+            escritor.writerow(
+                ["id_precio", "id_libro", "titulo", "moneda", "monto"]
+            )
+            for precio in precios:
+                escritor.writerow(
+                    [
+                        precio.id,
+                        precio.libro.id,
+                        precio.libro.titulo,
+                        precio.moneda.codigo,
+                        f"{precio.monto:.2f}",
+                    ]
+                )
+
+        print(f"Se exportaron {len(precios)} precios en: {ruta_salida}")

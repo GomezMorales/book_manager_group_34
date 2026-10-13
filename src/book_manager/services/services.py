@@ -1,7 +1,13 @@
 """Servicios con la lógica de negocio de Book Manager."""
 
-from datetime import date
+import os
+from datetime import date, datetime
+from decimal import Decimal, InvalidOperation
+from pathlib import Path
 from typing import List, Optional
+
+import requests
+from dotenv import load_dotenv
 
 from book_manager.entities.entities import (
     CotizacionDolar,
@@ -583,6 +589,60 @@ class ServicioCotizacionDolar:
     ) -> None:
         self._repo = repo
         self._repo_tipo = repo_tipo
+
+    def obtener_cotizaciones(self) -> List[CotizacionDolar]:
+        """Descarga e incorpora cotizaciones nuevas desde DolarAPI.
+
+        Usa el valor de venta y la fecha de actualización informados por la
+        API. Solo registra respuestas cuyo tipo exista en la base y cuya
+        combinación tipo + fecha aún no esté registrada.
+        """
+        ruta_env = Path(__file__).resolve().parents[3] / ".env"
+        load_dotenv(ruta_env)
+        api_url = os.getenv("API_URL")
+        if not api_url:
+            raise ValueError("Definir API_URL en el archivo .env.")
+
+        try:
+            respuesta = requests.get(api_url, timeout=10)
+            respuesta.raise_for_status()
+            cotizaciones_api = respuesta.json()
+        except requests.RequestException as error:
+            raise ConnectionError(
+                "No se pudieron obtener las cotizaciones desde DolarAPI."
+            ) from error
+        except ValueError as error:
+            raise ValueError("DolarAPI devolvió una respuesta JSON inválida.") from error
+
+        if not isinstance(cotizaciones_api, list):
+            raise ValueError("DolarAPI devolvió un formato de respuesta inválido.")
+
+        tipos_por_nombre = {
+            tipo.nombre.casefold(): tipo
+            for tipo in self._repo_tipo.leer_todos()
+        }
+        nuevas: List[CotizacionDolar] = []
+
+        for cotizacion_api in cotizaciones_api:
+            try:
+                nombre = cotizacion_api["nombre"].strip()
+                fecha = datetime.fromisoformat(
+                    cotizacion_api["fechaActualizacion"].replace("Z", "+00:00")
+                ).date()
+                valor = Decimal(str(cotizacion_api["venta"]))
+            except (KeyError, AttributeError, TypeError, ValueError, InvalidOperation):
+                continue
+
+            tipo = tipos_por_nombre.get(nombre.casefold())
+            if tipo is None or valor <= 0:
+                continue
+
+            if self._repo.leer_por_tipo_y_fecha(tipo.id, fecha) is not None:
+                continue
+
+            nuevas.append(self.crear(tipo.id, fecha, valor))
+
+        return nuevas
 
     def _validar_valor(self, valor: float) -> float:
         """Verifica que el valor sea mayor a cero."""

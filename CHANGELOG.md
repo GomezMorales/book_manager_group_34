@@ -1,3 +1,6 @@
+## [Ejercicio 07]
+- Se modifica el .env para poder obtener la URL de la API y se crean las funciones para descargar, buscar y registrar las cotizaciones en la base de datos.
+
 ## [Ejercicio 06]
 - Se migra la persistencia con la que trabaja el sistema, pasando de operar con los CSV a operar con la BBDD definida en los ejercicios previos.
 

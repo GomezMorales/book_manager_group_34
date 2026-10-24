@@ -1,3 +1,8 @@
+## [Ejercicio 02]
+- Se agrega cargar_datos_desde_sql en migrations/migrations.py.
+- Ejecuta los .sql en orden de claves foráneas dentro de una única transacción.
+- La carga es repetible: usa ON CONFLICT DO NOTHING y reinicia las secuencias.
+
 ## [Ejercicio 01]
 - Se crea la rama Sprint_3 a partir de Sprint_2.
 - Se agregan las carpetas scraper y reportes.

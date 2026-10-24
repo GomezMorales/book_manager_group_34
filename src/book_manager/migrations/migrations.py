@@ -248,3 +248,52 @@ def migrar_datos(
     finally:
         if conexion_propia:
             conexion.cerrar()
+
+
+def cargar_datos_desde_sql(
+    carpeta_sqls: str,
+    conexion: Optional[ConexionDB] = None,
+) -> int:
+    """Carga en la base de datos los datos de los archivos .sql existentes.
+
+    Ejecuta los archivos generados por migrar_datos en orden de claves
+    foráneas, dentro de una única transacción. Es repetible (ON CONFLICT).
+
+    Args:
+        carpeta_sqls (str): Carpeta donde están los archivos sql.
+        conexion (Optional[ConexionDB]): Conexión a usar. Si no se indica,
+            se crea una a partir del archivo .env.
+
+    Returns:
+        int: Cantidad de archivos sql ejecutados.
+
+    Raises:
+        FileNotFoundError: Si falta alguno de los archivos sql.
+    """
+    ruta_sqls = Path(carpeta_sqls)
+    archivos_sql: List[Tuple[TablaMigracion, Path]] = []
+    for tabla in TABLAS:
+        ruta_sql = ruta_sqls / tabla.archivo_sql
+        if not ruta_sql.exists():
+            raise FileNotFoundError(f"No se encontró el archivo {ruta_sql}.")
+        archivos_sql.append((tabla, ruta_sql))
+
+    conexion_propia = conexion is None
+    if conexion is None:
+        conexion = ConexionDB()
+    try:
+        Base.metadata.create_all(conexion.engine)
+        with conexion.transaccion() as sesion:
+            for tabla, ruta_sql in archivos_sql:
+                _ejecutar_sql(sesion, ruta_sql)
+                contenido = ruta_sql.read_text(encoding="utf-8")
+                cantidad = sum(1 for l in contenido.splitlines() if l.strip())
+                print(
+                    f"{tabla.tabla:<20} {cantidad:>3} sentencias "
+                    f"<- {ruta_sql.name}"
+                )
+            _reiniciar_secuencias(sesion)
+    finally:
+        if conexion_propia:
+            conexion.cerrar()
+    return len(archivos_sql)

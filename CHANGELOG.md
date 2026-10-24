@@ -1,3 +1,11 @@
+## [Ejercicio 01]
+- Se crea la rama Sprint_3 a partir de Sprint_2.
+- Se agregan las carpetas scraper y reportes.
+- Se agregan scrapy y openpyxl a requirements.txt.
+- Se actualiza el README al Sprint 3.
+
+# Sprint 2
+
 ## [Ejercicio 08]
 - Se modifica book_manager/ui/console.py para extender el menú principal y sus opciones.
 

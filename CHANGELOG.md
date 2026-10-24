@@ -1,3 +1,10 @@
+## [Ejercicio 03]
+- Se implementa el módulo `book_manager.scraper` utilizando Scrapy para obtener información de libros desde Cúspide.
+- Se crea `CuspideSpider`, que recibe títulos del catálogo y procesa como máximo 10 resultados por cada búsqueda.
+- Se implementan `Item`, `ItemLoader` y pipelines para limpiar datos, validar registros, evitar duplicados y exportar resultados en formato JSONL.
+- Se incorporan los datos de precio, URL de imagen, medios de pago, descripción, URL del producto y fecha de extracción.
+- Se agrega `scrapy.cfg` y las dependencias necesarias para ejecutar el scraper.
+
 ## [Ejercicio 02]
 - Se agrega cargar_datos_desde_sql en migrations/migrations.py.
 - Ejecuta los .sql en orden de claves foráneas dentro de una única transacción.

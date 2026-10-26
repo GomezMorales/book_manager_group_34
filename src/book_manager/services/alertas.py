@@ -12,6 +12,10 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from openpyxl import Workbook
+from openpyxl.styles import Font
+
+from book_manager.services.auditoria import auditar_metodos_publicos
 from book_manager.services.services import ServicioPrecio
 
 RAIZ_SRC = Path(__file__).resolve().parents[2]
@@ -137,6 +141,52 @@ def generar_csv_alertas(
     return ruta
 
 
+def generar_reporte_excel(
+    alertas: List[AlertaPrecio],
+    carpeta: Path = CARPETA_REPORTES,
+) -> Path:
+    """Exporta las comparaciones de precios a una nueva planilla Excel."""
+    carpeta.mkdir(parents=True, exist_ok=True)
+    libro_excel = Workbook()
+    hoja = libro_excel.active
+    hoja.title = "Comparación de precios"
+    hoja.append(
+        [
+            "Libro",
+            "Precio interno",
+            "Precio web",
+            "Diferencia",
+            "Fecha de extracción",
+        ]
+    )
+    for celda in hoja[1]:
+        celda.font = Font(bold=True)
+
+    for alerta in alertas:
+        hoja.append(
+            [
+                alerta.libro,
+                alerta.precio_interno,
+                alerta.precio_web,
+                alerta.diferencia,
+                alerta.fecha_extraccion,
+            ]
+        )
+
+    hoja.freeze_panes = "A2"
+    hoja.auto_filter.ref = hoja.dimensions
+    for columna in hoja.columns:
+        ancho = max(len(str(celda.value or "")) for celda in columna)
+        hoja.column_dimensions[columna[0].column_letter].width = min(
+            ancho + 2, 60
+        )
+
+    marca = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    ruta = carpeta / f"comparacion_precios_{marca}.xlsx"
+    libro_excel.save(ruta)
+    return ruta
+
+
 @dataclass
 class ResultadoAlertas:
     """Resultado de una ejecución: alertas encontradas y CSV generado."""
@@ -145,6 +195,7 @@ class ResultadoAlertas:
     ruta_csv: Path
 
 
+@auditar_metodos_publicos
 class ServicioAlertasPrecio:
     """Ejecuta el scraper y genera el CSV de alertas de precios."""
 
@@ -208,3 +259,17 @@ class ServicioAlertasPrecio:
             self.ejecutar_scraper(list(precios))
         alertas = comparar_precios(leer_resultados(), precios, umbral)
         return ResultadoAlertas(alertas, generar_csv_alertas(alertas))
+
+    def generar_reporte_excel(self, scrapear: bool = True) -> Path:
+        """Genera Excel con todos los libros que tienen una coincidencia web."""
+        precios = self.precios_internos()
+        if not precios:
+            raise ValueError(
+                "No hay precios internos en ARS para generar el reporte."
+            )
+        if scrapear:
+            self.ejecutar_scraper(list(precios))
+        comparaciones = comparar_precios(
+            leer_resultados(), precios, umbral=0
+        )
+        return generar_reporte_excel(comparaciones)

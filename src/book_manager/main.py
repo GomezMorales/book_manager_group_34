@@ -1,6 +1,7 @@
 """Punto de entrada de Book Manager."""
 
 from book_manager.database.connection import ConexionDB
+from book_manager.models.models import Auditoria
 from book_manager.preload_data.preload_data import cargar_datos_iniciales
 from book_manager.repositories.repositories import (
     RepositorioCotizacionDolar,
@@ -22,6 +23,8 @@ from book_manager.services.services import (
     ServicioStock,
     ServicioTipoCotizacion,
 )
+from book_manager.services.alertas import ServicioAlertasPrecio
+from book_manager.services.auditoria import ServicioAuditoria
 from book_manager.ui.console import ConsolaBookManager
 
 
@@ -34,6 +37,7 @@ def main(import_default_data: bool = False) -> None:
     """
     conexion = ConexionDB()
     try:
+        Auditoria.__table__.create(conexion.engine, checkfirst=True)
         if import_default_data:
             cargar_datos_iniciales(conexion)
 
@@ -58,6 +62,8 @@ def main(import_default_data: bool = False) -> None:
         servicio_cotizacion = ServicioCotizacionDolar(
             repo_cotizacion, repo_tipo
         )
+        servicio_alertas = ServicioAlertasPrecio(servicio_precio)
+        servicio_auditoria = ServicioAuditoria(conexion)
 
         consola = ConsolaBookManager(
             servicio_libro,
@@ -68,6 +74,8 @@ def main(import_default_data: bool = False) -> None:
             servicio_precio,
             servicio_stock,
             servicio_cotizacion,
+            servicio_alertas,
+            servicio_auditoria,
         )
         consola.ejecutar()
     finally:

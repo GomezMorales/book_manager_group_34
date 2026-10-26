@@ -1,3 +1,13 @@
+## [Ejercicio 06]
+- Se agrega el decorador de auditoría en services/auditoria.py para registrar las operaciones públicas de los servicios.
+- Se crea la tabla auditoria con acción, fecha y detalles; se registran tanto las operaciones exitosas como las fallidas.
+- Se agrega la opción para consultar el historial de auditoría desde el menú principal.
+
+## [Ejercicio 05]
+- Se agrega la generación de reportes Excel con el libro, el precio interno, el precio web, la diferencia y la fecha de extracción.
+- Los reportes se guardan en src/book_manager/reportes/ con nombre único por ejecución.
+- Se incorpora la opción de generar el reporte desde el menú de reportes, ejecutando el scraper o reutilizando la última extracción.
+
 ## [Ejercicio 04]
 - Se agrega services/alertas.py con ServicioAlertasPrecio.
 - generar_alertas(umbral) recibe la diferencia de precio (%) ingresada por el usuario, ejecuta el scraper y compara los precios.
@@ -90,4 +100,3 @@
 ## [Ejercicio 01]
 - Se clona el repositorio y se crea la rama Sprint_1.
 - Se crea la estructura de carpetas y archivos base del proyecto.
-

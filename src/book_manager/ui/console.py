@@ -28,6 +28,8 @@ from book_manager.services.services import (
     ServicioStock,
     ServicioTipoCotizacion,
 )
+from book_manager.services.alertas import ServicioAlertasPrecio
+from book_manager.services.auditoria import ServicioAuditoria
 
 
 @dataclass
@@ -56,6 +58,8 @@ class ConsolaBookManager:
         servicio_precio: ServicioPrecio,
         servicio_stock: ServicioStock,
         servicio_cotizacion: ServicioCotizacionDolar,
+        servicio_alertas: ServicioAlertasPrecio | None = None,
+        servicio_auditoria: ServicioAuditoria | None = None,
     ) -> None:
         self._libros = servicio_libro
         self._generos = servicio_genero
@@ -65,6 +69,8 @@ class ConsolaBookManager:
         self._precios = servicio_precio
         self._stock = servicio_stock
         self._cotizaciones = servicio_cotizacion
+        self._alertas = servicio_alertas
+        self._auditoria = servicio_auditoria
         self._gestores = self._crear_gestores()
 
     def _crear_gestores(self) -> List[GestorCRUD]:
@@ -161,12 +167,14 @@ class ConsolaBookManager:
                     self._menu_reportes()
                 elif opcion == "11":
                     self._obtener_cotizaciones_api()
+                elif opcion == "12":
+                    self._ver_historial_auditoria()
                 else:
                     print("Opción no válida.")
             except (KeyboardInterrupt, EOFError):
                 print("\nOperación cancelada. Hasta luego.")
                 return
-            except (ValueError, OSError, SQLAlchemyError) as error:
+            except (ValueError, OSError, RuntimeError, SQLAlchemyError) as error:
                 print(f"Error: {error}")
 
     @staticmethod
@@ -175,7 +183,8 @@ class ConsolaBookManager:
             "\n1. Libros       2. Géneros       3. Editoriales\n"
             "4. Monedas      5. Tipos dólar   6. Precios\n"
             "7. Stock        8. Cotizaciones  9. Movimientos de stock\n"
-            "10. Reportes    11. Obtener cotizaciones por API    0. Salir"
+            "10. Reportes    11. Obtener cotizaciones por API\n"
+            "12. Historial de auditoría    0. Salir"
         )
 
     def _menu_crud(self, gestor: GestorCRUD) -> None:
@@ -432,6 +441,7 @@ class ConsolaBookManager:
             print("4. Convertir USD a ARS")
             print("5. Lista de precios bimonetaria")
             print("6. Exportar precios a CSV")
+            print("7. Comparación de precios web a Excel")
             print("0. Volver")
             opcion = input("Opción: ").strip()
             try:
@@ -449,10 +459,36 @@ class ConsolaBookManager:
                     self._reporte_precios_bimonetarios()
                 elif opcion == "6":
                     self._exportar_precios_csv()
+                elif opcion == "7":
+                    self._generar_reporte_excel()
                 else:
                     print("Opción no válida.")
-            except (ValueError, OSError) as error:
+            except (ValueError, OSError, RuntimeError) as error:
                 print(f"Error: {error}")
+
+    def _generar_reporte_excel(self) -> None:
+        if self._alertas is None:
+            raise RuntimeError("El servicio de reportes no está configurado.")
+        respuesta = input(
+            "¿Ejecutar el scraper antes de generar el reporte? (S/n): "
+        ).strip().lower()
+        ruta = self._alertas.generar_reporte_excel(
+            scrapear=respuesta not in ("n", "no")
+        )
+        print(f"Reporte Excel generado en: {ruta}")
+
+    def _ver_historial_auditoria(self) -> None:
+        if self._auditoria is None:
+            raise RuntimeError("El servicio de auditoría no está configurado.")
+        registros = self._auditoria.listar()
+        if not registros:
+            print("No hay operaciones auditadas.")
+            return
+        for registro in registros:
+            print(
+                f"{registro.fecha.isoformat()} | {registro.accion} | "
+                f"{registro.detalles}"
+            )
 
     def _reporte_catalogo(self) -> None:
         precios = self._precios.listar()

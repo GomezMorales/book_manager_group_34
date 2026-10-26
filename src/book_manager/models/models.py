@@ -3,16 +3,18 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import (
     CheckConstraint,
     Date,
+    DateTime,
     ForeignKey,
     Integer,
     Numeric,
     String,
+    Text,
     UniqueConstraint,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -20,6 +22,19 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 class Base(DeclarativeBase):
     """Base declarativa compartida por los modelos ORM."""
+
+
+class Auditoria(Base):
+    """Registro de las operaciones ejecutadas en el sistema."""
+
+    __tablename__ = "auditoria"
+
+    id_auditoria: Mapped[int] = mapped_column(Integer, primary_key=True)
+    accion: Mapped[str] = mapped_column(String(150), nullable=False)
+    fecha: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    detalles: Mapped[str] = mapped_column(Text, nullable=False)
 
 
 class Genero(Base):

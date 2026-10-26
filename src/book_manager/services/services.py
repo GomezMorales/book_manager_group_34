@@ -29,8 +29,10 @@ from book_manager.repositories.repositories import (
     RepositorioStock,
     RepositorioTipoCotizacion,
 )
+from book_manager.services.auditoria import auditar_metodos_publicos
 
 
+@auditar_metodos_publicos
 class ServicioGenero:
     """Lógica de negocio para la gestión de géneros."""
 
@@ -91,6 +93,7 @@ class ServicioGenero:
         self._repo.eliminar(id)
 
 
+@auditar_metodos_publicos
 class ServicioEditorial:
     """Lógica de negocio para la gestión de editoriales."""
 
@@ -151,6 +154,7 @@ class ServicioEditorial:
         self._repo.eliminar(id)
 
 
+@auditar_metodos_publicos
 class ServicioTipoCotizacion:
     """Lógica de negocio para la gestión de tipos de cotización."""
 
@@ -215,6 +219,7 @@ class ServicioTipoCotizacion:
         self._repo.eliminar(id)
 
 
+@auditar_metodos_publicos
 class ServicioMoneda:
     """Lógica de negocio para la gestión de monedas."""
 
@@ -288,6 +293,7 @@ class ServicioMoneda:
         self._repo.eliminar(id)
 
 
+@auditar_metodos_publicos
 class ServicioLibro:
     """Lógica de negocio para la gestión de libros."""
 
@@ -407,6 +413,7 @@ class ServicioLibro:
         self._repo.eliminar(id)
 
 
+@auditar_metodos_publicos
 class ServicioPrecio:
     """Lógica de negocio para la gestión de precios."""
 
@@ -494,6 +501,7 @@ class ServicioPrecio:
         self._repo.eliminar(id)
 
 
+@auditar_metodos_publicos
 class ServicioStock:
     """Lógica de negocio para la gestión del stock de libros."""
 
@@ -579,6 +587,7 @@ class ServicioStock:
         self._repo.eliminar(libro_id)
 
 
+@auditar_metodos_publicos
 class ServicioCotizacionDolar:
     """Lógica de negocio para la gestión de cotizaciones del dólar."""
 

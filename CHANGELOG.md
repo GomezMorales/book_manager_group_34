@@ -1,3 +1,9 @@
+## [Ejercicio 04]
+- Se agrega services/alertas.py con ServicioAlertasPrecio.
+- generar_alertas(umbral) recibe la diferencia de precio (%) ingresada por el usuario, ejecuta el scraper y compara los precios.
+- Se compara el precio interno en ARS de cada libro con el resultado más parecido obtenido en Cúspide.
+- Cada ejecución genera un CSV descargable reportes/alertas_AAAAMMDD_HHMMSS.csv y devuelve las alertas y la ruta del archivo.
+
 ## [Ejercicio 03]
 - Se implementa el módulo `book_manager.scraper` utilizando Scrapy para obtener información de libros desde Cúspide.
 - Se crea `CuspideSpider`, que recibe títulos del catálogo y procesa como máximo 10 resultados por cada búsqueda.

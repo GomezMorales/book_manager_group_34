@@ -1,6 +1,7 @@
 # Sprint 3
 
 ## [Ejercicio 07]
+- Se corrige scrapy.cfg agregando la sección [settings] que exige Scrapy.
 - Se agregan al menú principal las opciones "Ejecutar scraping" (pide la diferencia de precio, ejecuta el scraper y genera el CSV de alertas) y "Generar reporte Excel".
 - Se mantiene "Historial de auditoría" en el menú principal.
 - Se agregan los alias *Model en models.py, RepositorioAuditoria en repositories.py y se reexporta ServicioAuditoria desde services.py.
@@ -46,6 +47,7 @@
 - Se modifica book_manager/ui/console.py para extender el menú principal y sus opciones.
 
 ## [Ejercicio 07]
+- Se corrige scrapy.cfg agregando la sección [settings] que exige Scrapy.
 - Se modifica el .env para poder obtener la URL de la API y se crean las funciones para descargar, buscar y registrar las cotizaciones en la base de datos.
 
 ## [Ejercicio 06]
@@ -78,6 +80,7 @@
 # Sprint 1
 
 ## [Ejercicio 07]
+- Se corrige scrapy.cfg agregando la sección [settings] que exige Scrapy.
 - Ajustes de estilo PEP8 en todos los módulos (indentación de 4 espacios, líneas de hasta 79 caracteres, nombres descriptivos) sin cambios funcionales.
 - Se implementa la ejecución del programa en main.py  
 

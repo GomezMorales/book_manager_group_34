@@ -15,7 +15,7 @@ class CuspideSpider(scrapy.Spider):
         super().__init__(*args, **kwargs)
         if not book_titles:
             raise ValueError(
-                "Debés indicar títulos con: -a "book_titles=Titulo 1|Titulo 2""
+                "Debés indicar títulos con: -a 'book_titles=Titulo 1|Titulo 2'"
             )
         self.book_titles = [
             title.strip()

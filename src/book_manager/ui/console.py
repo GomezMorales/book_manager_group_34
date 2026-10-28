@@ -473,23 +473,60 @@ class ConsolaBookManager:
             except (ValueError, OSError, RuntimeError) as error:
                 print(f"Error: {error}")
 
+
     def _ejecutar_scraping(self) -> None:
-        """Pide el umbral, ejecuta el scraper y genera el CSV de alertas."""
+        """Ejecuta el scraper y muestra las alertas de precios."""
+
         if self._alertas is None:
-            raise RuntimeError("El servicio de scraping no está configurado.")
+            raise RuntimeError(
+                "El servicio de scraping no está configurado."
+            )
+
         umbral = self._leer_decimal(
             "Diferencia de precio mínima para alertar (%): "
         )
+
         resultado = self._alertas.generar_alertas(umbral)
+
+        print(
+            "\nProductos web válidos encontrados: "
+            f"{resultado.productos_web}"
+        )
+
+        print(
+            "Libros del catálogo comparados: "
+            f"{resultado.libros_comparados}/"
+            f"{resultado.total_libros}"
+        )
+
+        if (
+            resultado.libros_comparados
+            < resultado.total_libros
+        ):
+            print(
+                "Aviso: no se encontraron coincidencias web "
+                "para todos los libros del catálogo."
+            )
+
         if not resultado.alertas:
-            print("No hay diferencias de precio que superen el umbral.")
+            print(
+                "No se encontraron diferencias de precio "
+                f"de al menos {umbral:g}% en los libros "
+                "que se pudieron comparar."
+            )
+
         for alerta in resultado.alertas:
             print(
-                f"{alerta.libro}: interno ${alerta.precio_interno:,.2f} | "
+                f"{alerta.libro}: "
+                f"interno ${alerta.precio_interno:,.2f} | "
                 f"web ${alerta.precio_web:,.2f} | "
                 f"dif. {alerta.diferencia_porcentual:+.1f}%"
             )
-        print(f"CSV de alertas generado en: {resultado.ruta_csv}")
+
+        print(
+            f"CSV de alertas generado en: {resultado.ruta_csv}"
+        )
+
 
     def _generar_reporte_excel(self) -> None:
         if self._alertas is None:

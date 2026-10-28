@@ -189,10 +189,13 @@ def generar_reporte_excel(
 
 @dataclass
 class ResultadoAlertas:
-    """Resultado de una ejecución: alertas encontradas y CSV generado."""
+    """Resultado de una ejecución de comparación de precios."""
 
     alertas: List[AlertaPrecio]
     ruta_csv: Path
+    productos_web: int
+    libros_comparados: int
+    total_libros: int
 
 
 @auditar_metodos_publicos
@@ -210,55 +213,146 @@ class ServicioAlertasPrecio:
             if precio.moneda.codigo == CODIGO_MONEDA_INTERNA
         }
 
+   
     @staticmethod
     def ejecutar_scraper(titulos: List[str]) -> Path:
-        """Corre CuspideSpider con los títulos indicados.
+        """Ejecuta el scraper y comprueba que haya resultados nuevos."""
 
-        Se ejecuta en un proceso aparte porque Scrapy no permite
-        reiniciar su motor dentro del mismo programa.
+        if not titulos:
+            raise ValueError(
+                "No hay títulos con precios internos para buscar."
+            )
 
-        Raises:
-            RuntimeError: Si el scraper termina con error.
-        """
-        entorno = {**os.environ, "PYTHONPATH": str(RAIZ_SRC)}
+        entorno = {
+            **os.environ,
+            "PYTHONPATH": str(RAIZ_SRC),
+            "SCRAPY_SETTINGS_MODULE": (
+                "book_manager.scraper.settings"
+            ),
+        }
+
+        # Evita que una ejecución fallida reutilice resultados antiguos.
+        RUTA_JSONL.parent.mkdir(parents=True, exist_ok=True)
+
+        if RUTA_JSONL.exists():
+            RUTA_JSONL.unlink()
+
         comando = [
-            sys.executable, "-m", "scrapy", "crawl", "cuspide",
-            "-a", f"book_titles={'|'.join(titulos)}",
+            sys.executable,
+            "-m",
+            "scrapy",
+            "crawl",
+            "cuspide",
+            "-a",
+            f"book_titles={'|'.join(titulos)}",
         ]
+
         resultado = subprocess.run(
-            comando, cwd=RAIZ_SRC, env=entorno,
-            capture_output=True, text=True,
+            comando,
+            cwd=RAIZ_SRC,
+            env=entorno,
+            capture_output=True,
+            text=True,
         )
+
+        logs = (
+            (resultado.stdout or "")
+            + "\n"
+            + (resultado.stderr or "")
+        ).strip()
+
         if resultado.returncode != 0:
             raise RuntimeError(
-                f"El scraper falló:\n{resultado.stderr[-1500:]}"
+                "El scraper falló al ejecutarse.\n"
+                + logs[-4000:]
             )
+
+        if (
+            not RUTA_JSONL.exists()
+            or RUTA_JSONL.stat().st_size == 0
+        ):
+            raise RuntimeError(
+                "El scraper terminó, pero no extrajo ningún "
+                "producto con precio válido.\n"
+                "Revisá los selectores de Cúspide, la respuesta "
+                "HTTP y los mensajes del scraper.\n"
+                + logs[-4000:]
+            )
+
         return RUTA_JSONL
+
+
 
     def generar_alertas(
         self, umbral: float, scrapear: bool = True
     ) -> ResultadoAlertas:
-        """Scrapea (opcional), compara precios y genera el CSV de alertas.
+        """Compara los precios y genera las alertas correspondientes."""
 
-        Args:
-            umbral: Diferencia porcentual mínima para alertar, indicada
-                por el usuario antes de cada ejecución del scraper.
-            scrapear: En False usa el último resultado del scraper.
-
-        Returns:
-            ResultadoAlertas: Alertas generadas y ruta del CSV.
-
-        Raises:
-            ValueError: Si el umbral es negativo.
-            RuntimeError: Si el scraper termina con error.
-        """
         if umbral < 0:
-            raise ValueError("El umbral no puede ser negativo.")
+            raise ValueError(
+                "El umbral no puede ser negativo."
+            )
+
         precios = self.precios_internos()
+
+        if not precios:
+            raise ValueError(
+                "No hay precios internos en ARS para comparar."
+            )
+
         if scrapear:
-            self.ejecutar_scraper(list(precios))
-        alertas = comparar_precios(leer_resultados(), precios, umbral)
-        return ResultadoAlertas(alertas, generar_csv_alertas(alertas))
+            self.ejecutar_scraper(list(precios.keys()))
+
+        resultados = leer_resultados()
+        resultados_validos = []
+
+        for resultado in resultados:
+            titulo = resultado.get("catalog_title")
+
+            if titulo not in precios:
+                continue
+
+            try:
+                precio_web = float(resultado.get("price"))
+            except (TypeError, ValueError):
+                continue
+
+            if precio_web <= 0:
+                continue
+
+            resultado_limpio = dict(resultado)
+            resultado_limpio["price"] = precio_web
+
+            resultados_validos.append(resultado_limpio)
+
+        titulos_comparados = {
+            resultado["catalog_title"]
+            for resultado in resultados_validos
+        }
+
+        if not titulos_comparados:
+            raise RuntimeError(
+                "Se ejecutó el scraper, pero no hay productos "
+                "válidos asociados a los libros del catálogo. "
+                "No se puede calcular la diferencia de precios."
+            )
+
+        alertas = comparar_precios(
+            resultados_validos,
+            precios,
+            umbral,
+        )
+
+        ruta_csv = generar_csv_alertas(alertas)
+
+        return ResultadoAlertas(
+            alertas=alertas,
+            ruta_csv=ruta_csv,
+            productos_web=len(resultados_validos),
+            libros_comparados=len(titulos_comparados),
+            total_libros=len(precios),
+        )
+
 
     def generar_reporte_excel(self, scrapear: bool = True) -> Path:
         """Genera el Excel con los libros que tienen coincidencia web."""

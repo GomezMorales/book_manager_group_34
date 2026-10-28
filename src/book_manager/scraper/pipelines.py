@@ -1,3 +1,6 @@
+
+"""Validación y exportación de productos extraídos."""
+
 import json
 from pathlib import Path
 
@@ -5,36 +8,63 @@ from scrapy.exceptions import DropItem
 
 
 class ValidateBookPipeline:
-    def __init__(self):
-        self.seen_urls = set()
+    """Descarta productos inválidos y evita duplicados."""
+
+    def open_spider(self, spider):
+        self.seen_keys = set()
 
     def process_item(self, item, spider):
         if not item.get("product_url"):
-            raise DropItem("Libro descartado: no tiene URL")
+            raise DropItem("Libro descartado: no tiene URL.")
 
-        if item.get("price") is None:
-            raise DropItem("Libro descartado: no tiene precio")
+        try:
+            precio = float(item.get("price"))
+        except (TypeError, ValueError):
+            raise DropItem(
+                "Libro descartado: no tiene un precio válido."
+            )
 
-        if item["product_url"] in self.seen_urls:
-            raise DropItem("Libro descartado: URL duplicada")
+        if precio <= 0:
+            raise DropItem(
+                "Libro descartado: el precio debe ser mayor a cero."
+            )
 
-        self.seen_urls.add(item["product_url"])
+        item["price"] = precio
+
+        # Una misma URL puede aparecer en la búsqueda de dos títulos.
+        # La deduplicación se hace por título buscado y URL.
+        clave = (
+            item.get("catalog_title"),
+            item.get("product_url"),
+        )
+
+        if clave in self.seen_keys:
+            raise DropItem("Libro descartado: resultado duplicado.")
+
+        self.seen_keys.add(clave)
+
         return item
 
 
 class JsonLinesExportPipeline:
+    """Guarda los productos válidos en formato JSON Lines."""
+
     def open_spider(self, spider):
         output_dir = Path("scraper_output")
-        output_dir.mkdir(exist_ok=True)
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-        self.file = (output_dir / "cuspide_books.jsonl").open(
-            "w",
-            encoding="utf-8",
-        )
+        self.file = (
+            output_dir / "cuspide_books.jsonl"
+        ).open("w", encoding="utf-8")
 
     def process_item(self, item, spider):
-        line = json.dumps(dict(item), ensure_ascii=False)
-        self.file.write(f"{line}\n")
+        linea = json.dumps(
+            dict(item),
+            ensure_ascii=False,
+        )
+
+        self.file.write(linea + "\n")
+
         return item
 
     def close_spider(self, spider):

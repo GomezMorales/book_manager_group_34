@@ -10,10 +10,10 @@ from scrapy.exceptions import DropItem
 class ValidateBookPipeline:
     """Descarta productos inválidos y evita duplicados."""
 
-    def open_spider(self, spider):
+    def open_spider(self, spider=None):
         self.seen_keys = set()
 
-    def process_item(self, item, spider):
+    def process_item(self, item, spider=None):
         if not item.get("product_url"):
             raise DropItem("Libro descartado: no tiene URL.")
 
@@ -49,7 +49,7 @@ class ValidateBookPipeline:
 class JsonLinesExportPipeline:
     """Guarda los productos válidos en formato JSON Lines."""
 
-    def open_spider(self, spider):
+    def open_spider(self, spider=None):
         output_dir = Path("scraper_output")
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -57,7 +57,7 @@ class JsonLinesExportPipeline:
             output_dir / "cuspide_books.jsonl"
         ).open("w", encoding="utf-8")
 
-    def process_item(self, item, spider):
+    def process_item(self, item, spider=None):
         linea = json.dumps(
             dict(item),
             ensure_ascii=False,
@@ -67,5 +67,5 @@ class JsonLinesExportPipeline:
 
         return item
 
-    def close_spider(self, spider):
+    def close_spider(self, spider=None):
         self.file.close()

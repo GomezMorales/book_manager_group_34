@@ -2,10 +2,15 @@
 """Spider para obtener libros y precios desde Cúspide."""
 
 from datetime import datetime, timezone
+from typing import Iterator
 from urllib.parse import quote_plus, urlparse
 
 import scrapy
 
+from book_manager.scraper.coincidencias import (
+    UMBRAL_SIMILITUD_TITULO,
+    similitud_titulos,
+)
 from book_manager.scraper.loaders import CuspideBookLoader
 
 
@@ -42,9 +47,8 @@ class CuspideSpider(scrapy.Spider):
             if titulo.strip()
         ]
 
-    def start_requests(self):
-        """Inicia una búsqueda por cada título del catálogo."""
-
+    def _crear_solicitudes_iniciales(self) -> Iterator[scrapy.Request]:
+        """Crea una solicitud de búsqueda por cada título del catálogo."""
         headers = {
             "Accept": (
                 "text/html,application/xhtml+xml,"
@@ -70,6 +74,15 @@ class CuspideSpider(scrapy.Spider):
                 headers=headers,
                 meta={"catalog_title": titulo},
             )
+
+    def start_requests(self):
+        """Compatibilidad con Scrapy anterior a 2.13."""
+        yield from self._crear_solicitudes_iniciales()
+
+    async def start(self):
+        """Inicia las solicitudes en Scrapy 2.13 y versiones posteriores."""
+        for solicitud in self._crear_solicitudes_iniciales():
+            yield solicitud
 
     def parse_search(self, response):
         """Extrae los enlaces a los productos encontrados."""
@@ -141,7 +154,7 @@ class CuspideSpider(scrapy.Spider):
 
         titulo_catalogo = response.meta["catalog_title"]
 
-        loader = CuspideBookLoader(response=response)
+        loader = CuspideBookLoader(selector=response.selector)
 
         loader.add_value("catalog_title", titulo_catalogo)
 
@@ -200,6 +213,20 @@ class CuspideSpider(scrapy.Spider):
         )
 
         item = loader.load_item()
+
+        similitud = similitud_titulos(
+            titulo_catalogo, item.get("title")
+        )
+        if similitud < UMBRAL_SIMILITUD_TITULO:
+            self.logger.warning(
+                "Se descarta el producto '%s' para la búsqueda '%s': "
+                "similitud insuficiente (%.2f < %.2f).",
+                item.get("title") or "(sin título)",
+                titulo_catalogo,
+                similitud,
+                UMBRAL_SIMILITUD_TITULO,
+            )
+            return
 
         if not item.get("price"):
             self.logger.warning(

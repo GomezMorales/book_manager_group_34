@@ -5,16 +5,18 @@ import json
 import os
 import subprocess
 import sys
-import unicodedata
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from openpyxl import Workbook
 from openpyxl.styles import Font
 
+from book_manager.scraper.coincidencias import (
+    es_coincidencia_valida,
+    similitud_titulos,
+)
 from book_manager.services.auditoria import auditar_metodos_publicos
 from book_manager.services.services import ServicioPrecio
 
@@ -40,25 +42,6 @@ class AlertaPrecio:
     diferencia_porcentual: float
     url: str
     fecha_extraccion: str
-
-
-def _normalizar(texto: str) -> str:
-    """Pasa a minúsculas y quita tildes para comparar títulos."""
-    sin_tildes = unicodedata.normalize("NFKD", texto)
-    sin_tildes = "".join(c for c in sin_tildes if not unicodedata.combining(c))
-    return " ".join(sin_tildes.lower().split())
-
-
-def _similitud(titulo_catalogo: str, titulo_web: Optional[str]) -> float:
-    """Devuelve qué tan parecidos son dos títulos (0 a 1)."""
-    if not titulo_web:
-        return 0.0
-    a, b = _normalizar(titulo_catalogo), _normalizar(titulo_web)
-    if a == b:
-        return 1.0
-    if a in b:
-        return 0.9
-    return SequenceMatcher(None, a, b).ratio()
 
 
 def leer_resultados(ruta_jsonl: Path = RUTA_JSONL) -> List[dict]:
@@ -95,12 +78,17 @@ def comparar_precios(
     for titulo, precio_interno in precios_internos.items():
         candidatos = [
             r for r in resultados
-            if r.get("catalog_title") == titulo and r.get("price")
+            if (
+                r.get("catalog_title") == titulo
+                and r.get("price")
+                and es_coincidencia_valida(titulo, r.get("title"))
+            )
         ]
         if not candidatos:
             continue
         mejor = max(
-            candidatos, key=lambda r: _similitud(titulo, r.get("title"))
+            candidatos,
+            key=lambda r: similitud_titulos(titulo, r.get("title")),
         )
         precio_web = float(mejor["price"])
         diferencia = precio_web - precio_interno
@@ -310,6 +298,10 @@ class ServicioAlertasPrecio:
             titulo = resultado.get("catalog_title")
 
             if titulo not in precios:
+                continue
+            if not es_coincidencia_valida(
+                titulo, resultado.get("title")
+            ):
                 continue
 
             try:

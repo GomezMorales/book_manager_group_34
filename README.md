@@ -20,6 +20,14 @@ Las operaciones públicas de los servicios se registran en la tabla `auditoria`
 con la acción, la fecha, los argumentos relevantes y el resultado. El historial
 se consulta desde la opción **Historial de auditoría** del menú principal.
 
+Para evitar alertas de libros que no corresponden a la búsqueda, los títulos
+web se comparan con el título del catálogo y solo se aceptan coincidencias con
+similitud mínima de `0.75`. También se admiten coincidencias exactas con
+formatos editoriales reconocidos, como “tapa dura” o “bolsillo”; no alcanza con
+que el título buscado aparezca dentro de otro título, y se exige que coincidan
+los números que forman parte del título. Este filtro se aplica tanto durante
+el scraping como al generar alertas y reportes.
+
 ### Menú principal (Sprint 3)
 
 - **13. Ejecutar scraping**: pide la diferencia de precio (%) a partir de la

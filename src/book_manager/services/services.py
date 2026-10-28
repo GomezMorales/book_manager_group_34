@@ -29,7 +29,10 @@ from book_manager.repositories.repositories import (
     RepositorioStock,
     RepositorioTipoCotizacion,
 )
-from book_manager.services.auditoria import auditar_metodos_publicos
+from book_manager.services.auditoria import (  # noqa: F401
+    ServicioAuditoria,
+    auditar_metodos_publicos,
+)
 
 
 @auditar_metodos_publicos
@@ -621,10 +624,14 @@ class ServicioCotizacionDolar:
                 "No se pudieron obtener las cotizaciones desde DolarAPI."
             ) from error
         except ValueError as error:
-            raise ValueError("DolarAPI devolvió una respuesta JSON inválida.") from error
+            raise ValueError(
+                "DolarAPI devolvió una respuesta JSON inválida."
+            ) from error
 
         if not isinstance(cotizaciones_api, list):
-            raise ValueError("DolarAPI devolvió un formato de respuesta inválido.")
+            raise ValueError(
+                "DolarAPI devolvió un formato de respuesta inválido."
+            )
 
         tipos_por_nombre = {
             tipo.nombre.casefold(): tipo
@@ -639,7 +646,13 @@ class ServicioCotizacionDolar:
                     cotizacion_api["fechaActualizacion"].replace("Z", "+00:00")
                 ).date()
                 valor = Decimal(str(cotizacion_api["venta"]))
-            except (KeyError, AttributeError, TypeError, ValueError, InvalidOperation):
+            except (
+                KeyError,
+                AttributeError,
+                TypeError,
+                ValueError,
+                InvalidOperation,
+            ):
                 continue
 
             tipo = tipos_por_nombre.get(nombre.casefold())

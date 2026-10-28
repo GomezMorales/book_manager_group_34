@@ -287,7 +287,9 @@ def cargar_datos_desde_sql(
             for tabla, ruta_sql in archivos_sql:
                 _ejecutar_sql(sesion, ruta_sql)
                 contenido = ruta_sql.read_text(encoding="utf-8")
-                cantidad = sum(1 for l in contenido.splitlines() if l.strip())
+                cantidad = sum(
+                    1 for linea in contenido.splitlines() if linea.strip()
+                )
                 print(
                     f"{tabla.tabla:<20} {cantidad:>3} sentencias "
                     f"<- {ruta_sql.name}"

@@ -27,7 +27,8 @@ class CuspideSpider(scrapy.Spider):
 
     def start_requests(self):
         for title in self.book_titles:
-            url = f"https://www.cuspide.com/Resultados.aspx?c={quote_plus(title)}"
+            consulta = quote_plus(title)
+            url = f"https://www.cuspide.com/Resultados.aspx?c={consulta}"
             yield scrapy.Request(
                 url=url,
                 callback=self.parse_search,

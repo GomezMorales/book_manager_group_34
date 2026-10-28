@@ -6,10 +6,9 @@ from datetime import datetime, timezone
 from functools import wraps
 from typing import Callable, TypeVar, cast
 
-from sqlalchemy import select
-
 from book_manager.database.connection import ConexionDB
 from book_manager.models.models import Auditoria
+from book_manager.repositories.repositories import RepositorioAuditoria
 
 F = TypeVar("F", bound=Callable[..., object])
 _OPERACION_AUDITADA: ContextVar[bool] = ContextVar(
@@ -49,8 +48,7 @@ def _registrar(
         fecha=datetime.now(timezone.utc),
         detalles=json.dumps(detalles, ensure_ascii=False, default=str),
     )
-    with conexion.transaccion() as sesion:
-        sesion.add(registro)
+    RepositorioAuditoria(conexion).agregar(registro)
 
 
 def auditar(funcion: F) -> F:
@@ -58,7 +56,9 @@ def auditar(funcion: F) -> F:
     accion = funcion.__qualname__
 
     @wraps(funcion)
-    def envoltura(instancia: object, *args: object, **kwargs: object) -> object:
+    def envoltura(
+        instancia: object, *args: object, **kwargs: object
+    ) -> object:
         if _OPERACION_AUDITADA.get():
             return funcion(instancia, *args, **kwargs)
 
@@ -77,8 +77,8 @@ def auditar(funcion: F) -> F:
                     _registrar(instancia, accion, detalles)
                 except Exception as error_auditoria:
                     raise RuntimeError(
-                        f"La operación {accion} falló ({error}) y tampoco pudo "
-                        f"registrarse en auditoría: {error_auditoria}"
+                        f"La operación {accion} falló ({error}) y tampoco "
+                        f"pudo registrarse en auditoría: {error_auditoria}"
                     ) from error_auditoria
                 raise
 
@@ -114,11 +114,8 @@ class ServicioAuditoria:
 
     def __init__(self, conexion: ConexionDB) -> None:
         self._conexion = conexion
+        self._repo = RepositorioAuditoria(conexion)
 
     def listar(self) -> list[Auditoria]:
         """Devuelve los registros más recientes primero."""
-        with self._conexion.obtener_sesion() as sesion:
-            consulta = select(Auditoria).order_by(
-                Auditoria.fecha.desc(), Auditoria.id_auditoria.desc()
-            )
-            return list(sesion.scalars(consulta))
+        return self._repo.listar()

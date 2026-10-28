@@ -19,3 +19,11 @@ extracción.
 Las operaciones públicas de los servicios se registran en la tabla `auditoria`
 con la acción, la fecha, los argumentos relevantes y el resultado. El historial
 se consulta desde la opción **Historial de auditoría** del menú principal.
+
+### Menú principal (Sprint 3)
+
+- **13. Ejecutar scraping**: pide la diferencia de precio (%) a partir de la
+  cual alertar, ejecuta el scraper de Cúspide y genera
+  `src/book_manager/reportes/alertas_AAAAMMDD_HHMMSS.csv`.
+- **14. Generar reporte Excel**: comparación de precios internos y web.
+- **12. Historial de auditoría**: operaciones registradas en la tabla `auditoria`.

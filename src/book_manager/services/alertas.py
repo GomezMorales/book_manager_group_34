@@ -261,7 +261,7 @@ class ServicioAlertasPrecio:
         return ResultadoAlertas(alertas, generar_csv_alertas(alertas))
 
     def generar_reporte_excel(self, scrapear: bool = True) -> Path:
-        """Genera Excel con todos los libros que tienen una coincidencia web."""
+        """Genera el Excel con los libros que tienen coincidencia web."""
         precios = self.precios_internos()
         if not precios:
             raise ValueError(

@@ -169,12 +169,18 @@ class ConsolaBookManager:
                     self._obtener_cotizaciones_api()
                 elif opcion == "12":
                     self._ver_historial_auditoria()
+                elif opcion == "13":
+                    self._ejecutar_scraping()
+                elif opcion == "14":
+                    self._generar_reporte_excel()
                 else:
                     print("Opción no válida.")
             except (KeyboardInterrupt, EOFError):
                 print("\nOperación cancelada. Hasta luego.")
                 return
-            except (ValueError, OSError, RuntimeError, SQLAlchemyError) as error:
+            except (
+                ValueError, OSError, RuntimeError, SQLAlchemyError
+            ) as error:
                 print(f"Error: {error}")
 
     @staticmethod
@@ -184,7 +190,8 @@ class ConsolaBookManager:
             "4. Monedas      5. Tipos dólar   6. Precios\n"
             "7. Stock        8. Cotizaciones  9. Movimientos de stock\n"
             "10. Reportes    11. Obtener cotizaciones por API\n"
-            "12. Historial de auditoría    0. Salir"
+            "12. Historial de auditoría    13. Ejecutar scraping\n"
+            "14. Generar reporte Excel      0. Salir"
         )
 
     def _menu_crud(self, gestor: GestorCRUD) -> None:
@@ -466,6 +473,24 @@ class ConsolaBookManager:
             except (ValueError, OSError, RuntimeError) as error:
                 print(f"Error: {error}")
 
+    def _ejecutar_scraping(self) -> None:
+        """Pide el umbral, ejecuta el scraper y genera el CSV de alertas."""
+        if self._alertas is None:
+            raise RuntimeError("El servicio de scraping no está configurado.")
+        umbral = self._leer_decimal(
+            "Diferencia de precio mínima para alertar (%): "
+        )
+        resultado = self._alertas.generar_alertas(umbral)
+        if not resultado.alertas:
+            print("No hay diferencias de precio que superen el umbral.")
+        for alerta in resultado.alertas:
+            print(
+                f"{alerta.libro}: interno ${alerta.precio_interno:,.2f} | "
+                f"web ${alerta.precio_web:,.2f} | "
+                f"dif. {alerta.diferencia_porcentual:+.1f}%"
+            )
+        print(f"CSV de alertas generado en: {resultado.ruta_csv}")
+
     def _generar_reporte_excel(self) -> None:
         if self._alertas is None:
             raise RuntimeError("El servicio de reportes no está configurado.")
@@ -561,7 +586,9 @@ class ConsolaBookManager:
         for libro in libros:
             ars = precios_por_libro.get((libro.id, "ARS"))
             otra_moneda = precios_por_libro.get((libro.id, moneda.codigo))
-            texto_ars = f"ARS {ars:.2f}" if ars is not None else "sin precio ARS"
+            texto_ars = (
+                f"ARS {ars:.2f}" if ars is not None else "sin precio ARS"
+            )
             texto_otra = (
                 f"{moneda.codigo} {otra_moneda:.2f}"
                 if otra_moneda is not None

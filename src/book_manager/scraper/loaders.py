@@ -1,6 +1,6 @@
 import re
 from itemloaders import ItemLoader
-from itemloaders.processors import Compose, Join, MapCompose, TakeFirst
+from itemloaders.processors import Join, MapCompose, TakeFirst
 
 from book_manager.scraper.items import CuspideBookItem
 

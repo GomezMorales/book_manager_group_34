@@ -22,6 +22,7 @@ from book_manager.entities.entities import (
     TipoCotizacion,
 )
 from book_manager.models.models import (
+    Auditoria as ModeloAuditoria,
     CotizacionDolar as ModeloCotizacionDolar,
     Editorial as ModeloEditorial,
     Genero as ModeloGenero,
@@ -604,3 +605,22 @@ class RepositorioCotizacionDolar(
                 return False
             sesion.delete(modelo)
         return True
+
+
+class RepositorioAuditoria(_RepositorioSQLAlchemy):
+    """Persiste y consulta los registros de auditoría."""
+
+    def agregar(self, registro: ModeloAuditoria) -> ModeloAuditoria:
+        """Guarda un registro de auditoría."""
+        with self._transaccion() as sesion:
+            sesion.add(registro)
+        return registro
+
+    def listar(self) -> List[ModeloAuditoria]:
+        """Devuelve los registros, del más reciente al más antiguo."""
+        with self._conexion.obtener_sesion() as sesion:
+            consulta = select(ModeloAuditoria).order_by(
+                ModeloAuditoria.fecha.desc(),
+                ModeloAuditoria.id_auditoria.desc(),
+            )
+            return list(sesion.scalars(consulta))

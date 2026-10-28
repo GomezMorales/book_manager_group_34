@@ -178,3 +178,15 @@ class CotizacionDolar(Base):
     tipo_cotizacion: Mapped[TipoCotizacion] = relationship(
         back_populates="cotizaciones"
     )
+
+
+# Alias con sufijo "Model" para distinguir los modelos ORM de las entidades.
+AuditoriaModel = Auditoria
+GeneroModel = Genero
+EditorialModel = Editorial
+MonedaModel = Moneda
+TipoCotizacionModel = TipoCotizacion
+LibroModel = Libro
+PrecioModel = Precio
+StockModel = Stock
+CotizacionDolarModel = CotizacionDolar

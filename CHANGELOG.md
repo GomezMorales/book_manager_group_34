@@ -1,3 +1,11 @@
+# Sprint 3
+
+## [Ejercicio 07]
+- Se agregan al menú principal las opciones "Ejecutar scraping" (pide la diferencia de precio, ejecuta el scraper y genera el CSV de alertas) y "Generar reporte Excel".
+- Se mantiene "Historial de auditoría" en el menú principal.
+- Se agregan los alias *Model en models.py, RepositorioAuditoria en repositories.py y se reexporta ServicioAuditoria desde services.py.
+- Ajustes de estilo PEP8 en scraper, servicios y consola.
+
 ## [Ejercicio 06]
 - Se agrega el decorador de auditoría en services/auditoria.py para registrar las operaciones públicas de los servicios.
 - Se crea la tabla auditoria con acción, fecha y detalles; se registran tanto las operaciones exitosas como las fallidas.

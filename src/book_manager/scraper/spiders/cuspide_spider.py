@@ -192,6 +192,25 @@ class CuspideSpider(scrapy.Spider):
         for selector in selectores_precio:
             loader.add_css("price", selector)
 
+        selectores_medios_pago = (
+            ("#contentPaymentsPopUpArg li::text", "Argentina"),
+            ("#contentPaymentsPopUpInt li::text", "Internacional"),
+            (".payment_methods li::text", ""),
+            ("[class*='payment-method'] li::text", ""),
+            ("[class*='payment_methods'] li::text", ""),
+        )
+        for selector, region in selectores_medios_pago:
+            medios_pago = response.css(selector).getall()
+            if medios_pago:
+                if region:
+                    loader.add_value(
+                        "payment_methods",
+                        [f"{region}: {medio}" for medio in medios_pago],
+                    )
+                else:
+                    loader.add_value("payment_methods", medios_pago)
+                break
+
         loader.add_css(
             "image_url",
             ".woocommerce-product-gallery img::attr(src), "

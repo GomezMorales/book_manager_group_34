@@ -1,13 +1,19 @@
 # Sprint 3
 
-## [Ejercicio 07]
+## [Fix Ejercicio 03]
+
 - Se corrige scrapy.cfg agregando la sección [settings] que exige Scrapy.
-- Se agregan al menú principal las opciones "Ejecutar scraping" (pide la diferencia de precio, ejecuta el scraper y genera el CSV de alertas) y "Generar reporte Excel".
-- Se mantiene "Historial de auditoría" en el menú principal.
-- Se agregan los alias *Model en models.py, RepositorioAuditoria en repositories.py y se reexporta ServicioAuditoria desde services.py.
-- Ajustes de estilo PEP8 en scraper, servicios y consola.
 - Se adapta el inicio del spider a las versiones actuales de Scrapy y se corrige la inicialización del ItemLoader para que procese las páginas de productos.
 - Se incorpora un filtro de similitud de títulos que descarta resultados irrelevantes y evita alertas falsas; las coincidencias válidas se mantienen al comparar precios.
+- Se agregan selectores para extraer los medios de pago nacionales e internacionales de las páginas de productos y se normaliza su presentación.
+- Se agregan los alias *Model en models.py, RepositorioAuditoria en repositories.py y se reexporta ServicioAuditoria desde services.py.
+
+## [Ejercicio 07]
+
+- Se agregan al menú principal las opciones "Ejecutar scraping" (pide la diferencia de precio, ejecuta el scraper y genera el CSV de alertas) y "Generar reporte Excel".
+- Se mantiene "Historial de auditoría" en el menú principal.
+- Ajustes de estilo PEP8 en scraper, servicios y consola.
+
 
 ## [Ejercicio 06]
 - Se agrega el decorador de auditoría en services/auditoria.py para registrar las operaciones públicas de los servicios.

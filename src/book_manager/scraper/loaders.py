@@ -61,6 +61,18 @@ def parse_price(value):
     return precio if precio > 0 else None
 
 
+def clean_payment_method(value):
+    """Limpia el marcador de lista de los métodos de pago."""
+    if not value:
+        return None
+    valor_limpio = re.sub(
+        r"^(Argentina|Internacional):\s*>?\s*",
+        r"\1: ",
+        value,
+    )
+    return valor_limpio.lstrip("> ").strip()
+
+
 class CuspideBookLoader(ItemLoader):
     """Limpia y estructura los datos de cada producto."""
 
@@ -73,7 +85,7 @@ class CuspideBookLoader(ItemLoader):
     description_in = MapCompose(clean_text)
     description_out = Join(" ")
 
-    payment_methods_in = MapCompose(clean_text)
+    payment_methods_in = MapCompose(clean_text, clean_payment_method)
     payment_methods_out = Join(" | ")
 
     price_in = MapCompose(parse_price)
